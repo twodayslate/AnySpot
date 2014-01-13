@@ -1,0 +1,9 @@
+Package: com.twodayslate.spotlightanywhere
+Name: spotlightanywhere
+Depends: mobilesubstrate, com.a3tweaks.flipswitch
+Architecture: iphoneos-arm
+Description: An open source SSH Flipswitch.
+Maintainer: twodayslate
+Author: twodayslate
+Section: Addons (Flipswitch)Version: 1.0-6
+Installed-Size: 20

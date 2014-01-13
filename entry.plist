@@ -1,0 +1,10 @@
+{
+    entry = {
+	bundle = spotlightanywhere;
+	cell = PSLinkCell;
+	detail = spotlightanywhereListController;
+	icon = spotlightanywhere.png;
+	isController = 1;
+	label = spotlightanywhere;
+    };
+}
