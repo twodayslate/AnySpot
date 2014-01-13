@@ -6,8 +6,6 @@ TARGET := iphone:clang
 
 include theos/makefiles/common.mk
 
-
-
 BUNDLE_NAME = spotlightanywhere
 spotlightanywhere_FILES = spotlightanywhere.mm
 spotlightanywhere_INSTALL_PATH = /Library/Switches
