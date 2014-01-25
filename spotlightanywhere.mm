@@ -151,10 +151,11 @@
                 window.windowLevel = 9999*999;
                 window.hidden = NO;
                 //[window addSubview:MSHookIvar<UIView *>(vcont, "_touchStealingView")];
+				[window addSubview:bd];
+                [window addSubview:ts];
 				[window addSubview:sheader];
                 [window addSubview:table];
-                [window addSubview:bd];
-                [window addSubview:ts];
+                
                 // Above displays it but then makes the device unusable (window not dismised)
                 // Also, header doesn't display fully http://i.imgur.com/hwLkw8u.png
 
