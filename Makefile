@@ -7,11 +7,11 @@ TARGET := iphone:clang
 include theos/makefiles/common.mk
 
 BUNDLE_NAME = spotlightanywhere
-spotlightanywhere_FILES = spotlightanywhere.mm
+spotlightanywhere_FILES = spotlightanywhere.xm
 spotlightanywhere_INSTALL_PATH = /Library/Switches
 spotlightanywhere_FRAMEWORKS = UIKit
 spotlightanywhere_PRIVATE_FRAMEWORKS = Preferences
-spotlightanywhere_LIBRARIES = flipswitch
+spotlightanywhere_LIBRARIES = flipswitch substrate
 spotlightanywhere_ARCHS = armv7 arm64
 
 export SYSROOT = /home/Zac/theos/sdks/iPhoneOS7.0.sdk
