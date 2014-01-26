@@ -30,6 +30,10 @@
 -(BOOL)isVisible;
 @end
 
+@interface SBSearchGesture
+-(void)revealAnimated:(BOOL)arg1 ;
+@end
+
 @implementation FlipSLSwitch
 
 -(FSSwitchState)stateForSwitchIdentifier:(NSString *)switchIdentifier{
@@ -43,6 +47,7 @@
 			case FSSwitchStateOn:{
                 // Activate Spotlight
 				[(SpringBoard *)[UIApplication sharedApplication] _revealSpotlight];
+				//[[%c(SBSearchGesture) sharedInstance] revealAnimated:TRUE];
 				break;
 			}
 			case FSSwitchStateOff:
@@ -58,6 +63,13 @@
 	%log;
 	%orig;
 }
+-(void)quitTopApplication:(id)arg1 {
+	%log;
+	%orig;
+}
+-(void)applicationSuspend:(id)arg1 {
+	%log; %orig;
+}
 %end
 	
 %hook SBAppToAppWorkspaceTransaction 
@@ -71,13 +83,18 @@
 		SBApplication *app = (SBApplication*)arg2;
 		NSLog(@"From App Arg: %@",app);
 	}
-	BOOL superR = %orig;
-	NSLog(@"Orig %d",superR);
-	NSLog(@"-----------");	
-	return superR;
+	if(arg1) {
+		BOOL superR = %orig;
+		NSLog(@"Orig %d",superR);
+		NSLog(@"-----------");	
+		return superR;
+	}
+	else {
+		return 0;
+	}
 }	
 %end
-	
+
 %hook SBWorkspace
 -(BOOL)_applicationExited:(id)arg1 withInfo:(id)arg2{
 	%log;
