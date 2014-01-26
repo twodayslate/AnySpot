@@ -2,9 +2,15 @@
 #import "FSSwitchPanel.h"
 #import "CydiaSubstrate.h"
 #import <UIKit/UIKit.h>
-#import "SpringBoard.h"
 
 @interface FlipSLSwitch : NSObject <FSSwitchDataSource>
+@end
+
+@interface SBSearchViewController
++(id)sharedInstance;
+-(void)searchGesture:(id)arg1 changedPercentComplete:(float)arg2;
+-(BOOL)isVisible;
+-(void)loadView;
 @end
 
 @interface SBSearchHeader : UIView
@@ -14,92 +20,185 @@
 -(id)contextHostViewForRequester:(id)requester enableAndOrderFront:(BOOL)front;
 @end
 
+@interface SpringBoard
+-(id)_accessibilityFrontMostApplication;
+@end
+
 @interface SBSearchResultsBackdropView : UIView
 @end
 
-@interface SpringBoard (extras)
-- (void)_revealSpotlight;
-- (void)quitTopApplication:(struct __GSEvent *)arg1;
-- (id)_accessibilityFrontMostApplication;
-- (void)_revealSpotlight;
-@end
-
-@interface SBSearchViewController
-+(id)sharedInstance;
--(void)searchGesture:(id)arg1 changedPercentComplete:(float)arg2;
--(BOOL)isVisible;
-@end
-
-@interface SBSearchGesture
--(void)revealAnimated:(BOOL)arg1 ;
+@interface UIWindow (extras)
++(void)setAllWindowsKeepContextInBackground:(BOOL)arg1;
 @end
 
 @implementation FlipSLSwitch
 
 -(FSSwitchState)stateForSwitchIdentifier:(NSString *)switchIdentifier{
-	SBSearchViewController *vcont = [objc_getClass("SBSearchViewController") sharedInstance];
-	return [vcont isVisible]?FSSwitchStateOn:FSSwitchStateOff;
+		SBSearchViewController *vcont = [objc_getClass("SBSearchViewController") sharedInstance];
+        return [vcont isVisible]?FSSwitchStateOn:FSSwitchStateOff;
 }
 
--(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{		
-		switch(newState){
-			case FSSwitchStateIndeterminate:return;
-			case FSSwitchStateOn:{
-                // Activate Spotlight
-				[(SpringBoard *)[UIApplication sharedApplication] _revealSpotlight];
-				//[[%c(SBSearchGesture) sharedInstance] revealAnimated:TRUE];
-				break;
-			}
-			case FSSwitchStateOff:
-				NSLog(@"new state = off");
-				break;
-			default:return; 
-		}
+UIWindow *window;
+
+-(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
+        SBSearchViewController *vcont = [objc_getClass("SBSearchViewController") sharedInstance];
+        SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
+        UIView *container = MSHookIvar<UIView *>(sheader, "_container");
+        UITextField *search = MSHookIvar<UITextField *>(sheader, "_searchField");
+        UITableView *table = MSHookIvar<UITableView *>(vcont, "_tableView");
+		SBSearchResultsBackdropView *bd = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
+		UIView *ts = MSHookIvar<UIView *>(vcont, "_touchStealingView");
+
+        if(newState == FSSwitchStateIndeterminate)
+                return;
+
+        else if(newState == FSSwitchStateOn){
+                
+                NSLog(@"new state = on");
+
+                // [[[UIApplication sharedApplication] keyWindow] addSubview:sheader];
+                // [[[UIApplication sharedApplication] keyWindow] bringSubviewToFront:sheader];
+                // sheader.removedOnCompletion=NO;
+                //[[[UIApplication sharedApplication] keyWindow] insertSubview:sheader atIndex:0];
+
+                //UIView *container = MSHookIvar<UIView *>(sheader, "_container"); 
+                CGPoint newCenter = sheader.center;
+				newCenter.x = 160;
+				CGRect newBounds = CGRectMake(0, 0, 320, 73);
+
+				sheader.hidden = NO;
+				[sheader setAlpha:1.0];
+
+                [UIView animateWithDuration:1.0 
+			    animations:^{
+			        sheader.center = newCenter;
+			        sheader.bounds = newBounds;
+			    }];
+
+			    newCenter = container.center;
+				newCenter.x = 160;
+				newBounds = CGRectMake(0, 0, 320, 29);
+				CGRect newFrame = CGRectMake(0,31,320,29);
+
+				container.hidden = NO;
+				[container setAlpha:1.0];
+
+                [UIView animateWithDuration:1.0 
+			    animations:^{
+			        container.center = newCenter;
+			        container.bounds = newBounds;
+			        container.frame = newFrame;
+			    }];
+
+				newCenter = search.center;
+				newCenter.x = 127.5;
+				newBounds = CGRectMake(0, 0, 239, 29);
+				newFrame = CGRectMake(8,0,239,29);
+
+				search.hidden = NO;
+				[search setAlpha:1.0];
+
+                [UIView animateWithDuration:1.0 
+			    animations:^{
+			        search.center = newCenter;
+			        search.bounds = newBounds;
+			        search.frame = newFrame;
+			    }];
+
+                newCenter = table.center;
+				newCenter.x = 160;
+				newCenter.y = 320.5;
+				newBounds = CGRectMake(0, 0, 320, 495);
+				newFrame = CGRectMake(0,73,320,495);
+
+				table.hidden = NO;
+				[table setAlpha:1.0];
+
+                [UIView animateWithDuration:1.0 
+			    animations:^{
+			        table.center = newCenter;
+			        table.bounds = newBounds;
+			        table.frame = newFrame;
+			    }];
+
+			    newCenter = ts.center;
+				newCenter.x = 160;
+				newCenter.y = 284;
+				newBounds = CGRectMake(0, 0, 320, 568);
+				newFrame = CGRectMake(0,0,320,568);
+
+				ts.hidden = NO;
+				[ts setAlpha:1.0];
+
+                [UIView animateWithDuration:1.0 
+			    animations:^{
+			        ts.center = newCenter;
+			        ts.bounds = newBounds;
+			        ts.frame = newFrame;
+			    }];
+
+			    newCenter = bd.center;
+				newCenter.x = 160;
+				newCenter.y = 320.5;
+				newBounds = CGRectMake(0, 0, 320, 495);
+				newFrame = CGRectMake(0,73,320,495);
+
+				bd.hidden = NO;
+				[bd setAlpha:1.0];
+
+                [UIView animateWithDuration:1.0 
+			    animations:^{
+			        bd.center = newCenter;
+			        bd.bounds = newBounds;
+			        bd.frame = newFrame;
+			    }];
+                window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+                window.windowLevel = 9999*999;
+                window.hidden = NO;
+                //[window addSubview:MSHookIvar<UIView *>(vcont, "_touchStealingView")];
+				[window addSubview:bd];
+                [window addSubview:table];
+                [window addSubview:sheader];
+                //[window addSubview:ts];
+
+                //[vcont loadView];
+                // Above displays it but then makes the device unusable (window not dismised)
+                // Also, header doesn't display fully http://i.imgur.com/hwLkw8u.png
+
+                
+                //[ges revealAnimated:TRUE];
+                
+                
+
+                // http://blog.adambell.ca/post/73338421921/breaking-chat-heads-out-of-the-ios-sandbox
+                // //http://pastie.org/pastes/7618709#2
+                // UIView *hostView = [app1 contextHostViewForRequester:@"epichax1" enableAndOrderFront:YES];
+                //
+                
+                
+
+                
+                //SBApplication *currentApplication = [objc_getClass("SpringBoard-Class") _accessibilityFrontMostApplication];
+                
+				//[ges setTargetView:view];
+
+                //[[[UIApplication sharedApplication] keyWindow] insertSubview:sheader atIndex:0];
+                // Everything pops up for a second and then it all disapears. The icons are still moved 
+                // down (on Springboard), and you have to double press the home button to exit an app
+                // so the phone thinks it is there. 
+                
+        }
+
+        else if(newState == FSSwitchStateOff){
+                
+                NSLog(@"new state = off");
+                [window release];
+                [vcont loadView];
+                //[ges resetAnimated:TRUE];
+                
+        }
 }
+
+
+
 @end
-
-%hook SpringBoard
-- (void)_revealSpotlight{
-	%log;
-	%orig;
-}
--(void)quitTopApplication:(id)arg1 {
-	%log;
-	%orig;
-}
--(void)applicationSuspend:(id)arg1 {
-	%log; %orig;
-}
-%end
-	
-%hook SBAppToAppWorkspaceTransaction 
--(BOOL)selfApplicationWillBecomeReceiver:(id)arg1 fromApplication:(id)arg2{
-	
-	// This is fired when the app is told to close
-	
-	%log;
-	NSLog(@"-----------");
-	if(arg2){
-		SBApplication *app = (SBApplication*)arg2;
-		NSLog(@"From App Arg: %@",app);
-	}
-	if(arg1) {
-		BOOL superR = %orig;
-		NSLog(@"Orig %d",superR);
-		NSLog(@"-----------");	
-		return superR;
-	}
-	else {
-		return 0;
-	}
-}	
-%end
-
-%hook SBWorkspace
--(BOOL)_applicationExited:(id)arg1 withInfo:(id)arg2{
-	%log;
-	BOOL superR = %orig;
-	NSLog(@"Orig %d",superR);
-	return superR;
-}
-%end
