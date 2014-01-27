@@ -11,9 +11,14 @@
 -(void)searchGesture:(id)arg1 changedPercentComplete:(float)arg2;
 -(BOOL)isVisible;
 -(void)loadView;
+-(void)cancelButtonPressed;
 @end
 
 @interface SBSearchHeader : UIView
+@end
+
+@interface SBSearchModel
+-(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 ;
 @end
 
 @interface SBApplication
@@ -48,7 +53,7 @@ UIWindow *window;
         UITableView *table = MSHookIvar<UITableView *>(vcont, "_tableView");
 		SBSearchResultsBackdropView *bd = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
 		UIView *ts = MSHookIvar<UIView *>(vcont, "_touchStealingView");
-		UIView *ts = MSHookIvar<UIView *>(vcont, "_view");
+		//UIView *view = MSHookIvar<UIView *>(vcont, "_view");
 		
         if(newState == FSSwitchStateIndeterminate)
                 return;
@@ -160,34 +165,7 @@ UIWindow *window;
 				[window addSubview:bd];
                 [window addSubview:table];
                 [window addSubview:sheader];
-                //[window addSubview:ts];
-
-                //[vcont loadView];
-                // Above displays it but then makes the device unusable (window not dismised)
-                // Also, header doesn't display fully http://i.imgur.com/hwLkw8u.png
-
-                
-                //[ges revealAnimated:TRUE];
-                
-                
-
-                // http://blog.adambell.ca/post/73338421921/breaking-chat-heads-out-of-the-ios-sandbox
-                // //http://pastie.org/pastes/7618709#2
-                // UIView *hostView = [app1 contextHostViewForRequester:@"epichax1" enableAndOrderFront:YES];
-                //
-                
-                
-
-                
-                //SBApplication *currentApplication = [objc_getClass("SpringBoard-Class") _accessibilityFrontMostApplication];
-                
-				//[ges setTargetView:view];
-
-                //[[[UIApplication sharedApplication] keyWindow] insertSubview:sheader atIndex:0];
-                // Everything pops up for a second and then it all disapears. The icons are still moved 
-                // down (on Springboard), and you have to double press the home button to exit an app
-                // so the phone thinks it is there. 
-                
+             
         }
 
         else if(newState == FSSwitchStateOff){
@@ -203,3 +181,23 @@ UIWindow *window;
 
 
 @end
+
+
+%hook SBSearchViewController
+-(void)cancelButtonPressed {
+	if(window) {
+		[window release];
+	} else {
+		%orig;
+	}
+}
+%end
+
+%hook SBSearchModel
+-(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
+	if(window) {
+		[window release];
+	} 
+	return %orig;
+}
+%end
