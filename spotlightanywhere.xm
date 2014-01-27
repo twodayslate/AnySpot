@@ -13,6 +13,7 @@
 -(void)loadView;
 -(void)cancelButtonPressed;
 -(void)searchGesture:(id)arg1 completedShowing:(BOOL)arg2 ;
+-(void)_setShowingKeyboard:(BOOL)arg1 ;
 @end
 
 @interface SBSearchHeader : UIView
@@ -30,6 +31,8 @@
 @interface SpringBoard
 -(void)menuButtonUp:(id)arg1;
 -(void)_revealSpotlight;
+-(void)quitTopApplication:(id)arg1 ;
+-(void)applicationSuspend:(id)arg1 ;
 @end
 
 @interface UIApplication (extras)
@@ -75,12 +78,6 @@ SBSearchViewController *vcont;
     		} else {
                 NSLog(@"new state = on");
 
-                // [[[UIApplication sharedApplication] keyWindow] addSubview:sheader];
-                // [[[UIApplication sharedApplication] keyWindow] bringSubviewToFront:sheader];
-                // sheader.removedOnCompletion=NO;
-                //[[[UIApplication sharedApplication] keyWindow] insertSubview:sheader atIndex:0];
-
-                //UIView *container = MSHookIvar<UIView *>(sheader, "_container"); 
                 CGPoint newCenter = sheader.center;
 				newCenter.x = 160;
 				CGRect newBounds = CGRectMake(0, 0, 320, 73);
@@ -188,8 +185,14 @@ SBSearchViewController *vcont;
         } else if(newState == FSSwitchStateOff){
                 
                 NSLog(@"new state = off");
-                [window release];
-                [vcont loadView];
+                if(window) {
+                	[vcont loadView];
+	                [sheader searchGesture:nil changedPercentComplete:0.0];
+	                [vcont searchGesture:nil changedPercentComplete:0.0];
+	                [vcont searchGesture:nil completedShowing:NO];
+	                [window release];
+                }
+                
                 //[ges resetAnimated:TRUE];
         }
 }
@@ -213,6 +216,8 @@ SBSearchViewController *vcont;
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
 	if(window) {
+		[vcont searchGesture:nil changedPercentComplete:0.0];
+        [vcont searchGesture:nil completedShowing:NO];
 		[vcont loadView];
 		[window release];
 	} 
@@ -220,13 +225,43 @@ SBSearchViewController *vcont;
 }
 %end
 
-%hook SpringBoard
--(void)menuButtonUp:(id)arg1 {
+%hook SpringBoard //Is activator fucking this up?
+-(void)menuButtonUp:(id)arg1 { //This doesn't run, wrong method
+	NSLog(@"inside here 1");
 	if(window) {
+		[vcont searchGesture:nil changedPercentComplete:0.0];
+        [vcont searchGesture:nil completedShowing:NO];
+        [vcont _setShowingKeyboard:NO];
+        [vcont loadView];
 		[window release];
-		[vcont loadView];
 	} else {
-		return %orig;
+		%orig;
+	}
+}
+
+-(void)quitTopApplication:(id)arg1  { //This doesn't run, wrong method
+	NSLog(@"inside here 2");
+	if(window) {
+		[vcont searchGesture:nil changedPercentComplete:0.0];
+        [vcont searchGesture:nil completedShowing:NO];
+        [vcont _setShowingKeyboard:NO];
+        [vcont loadView];
+		[window release];
+	} else {
+		%orig;
+	}
+}
+
+-(void)applicationSuspend:(id)arg1 { //This doesn't run, wrong method
+	NSLog(@"inside here 3");
+	if(window) {
+		[vcont searchGesture:nil changedPercentComplete:0.0];
+        [vcont searchGesture:nil completedShowing:NO];
+        [vcont _setShowingKeyboard:NO];
+        [vcont loadView];
+		[window release];
+	} else {
+		%orig;
 	}
 }
 %end
