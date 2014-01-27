@@ -28,6 +28,10 @@
 @end
 
 @interface SpringBoard
+-(void)menuButtonUp:(id)arg1;
+@end
+
+@interface UIApplication (extras)
 -(id)_accessibilityFrontMostApplication;
 @end
 
@@ -47,9 +51,10 @@
 }
 
 UIWindow *window;
+SBSearchViewController *vcont;
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
-        SBSearchViewController *vcont = [objc_getClass("SBSearchViewController") sharedInstance];
+        vcont = [objc_getClass("SBSearchViewController") sharedInstance];
         SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
         UIView *container = MSHookIvar<UIView *>(sheader, "_container");
         UITextField *search = MSHookIvar<UITextField *>(sheader, "_searchField");
@@ -62,20 +67,14 @@ UIWindow *window;
                 return;
 
         else if(newState == FSSwitchStateOn){
-                
+            if ([[%c(SpringBoard) sharedApplication] _accessibilityFrontMostApplication] == NULL) {
+                //http://stackoverflow.com/questions/21373606/find-out-active-application-or-if-on-springboard/21373632
+                [vcont loadView];
+                [sheader searchGesture:nil changedPercentComplete:1.0];
+                [vcont searchGesture:nil changedPercentComplete:1.0];
+                [vcont searchGesture:nil completedShowing:YES];
+    		} else {
                 NSLog(@"new state = on");
-                UIWindow *topWindow = [[[UIApplication sharedApplication].windows sortedArrayUsingComparator:^NSComparisonResult(UIWindow *win1, UIWindow *win2) {
-    return win1.windowLevel - win2.windowLevel;
-}] lastObject];
-				UIView *topView = [[topWindow subviews] lastObject];
-				NSLog(@"topView:  %@",topView);
-				NSLog(@"topWindow: %@",topWindow);
-                NSLog(@"UIApplication %@",[[UIApplication sharedApplication] keyWindow].rootViewController);
-                NSLog(@"Bundle Name: %@",[[NSBundle mainBundle] bundlePath]);
-                NSLog(@"First responder: %@",[[[UIApplication sharedApplication] keyWindow] performSelector:@selector(firstResponder)]);
-                NSLog(@"isInternal: %d",[topWindow isInternalWindow]);
-                
-                // http://stackoverflow.com/questions/8252396/how-to-determine-which-apps-are-background-and-which-app-is-foreground-on-ios-by
 
                 // [[[UIApplication sharedApplication] keyWindow] addSubview:sheader];
                 // [[[UIApplication sharedApplication] keyWindow] bringSubviewToFront:sheader];
@@ -186,16 +185,13 @@ UIWindow *window;
 				[window addSubview:bd];
                 [window addSubview:table];
                 [window addSubview:sheader];
-             
-        }
-
-        else if(newState == FSSwitchStateOff){
+             }
+        } else if(newState == FSSwitchStateOff){
                 
                 NSLog(@"new state = off");
                 [window release];
                 [vcont loadView];
                 //[ges resetAnimated:TRUE];
-                
         }
 }
 
@@ -208,6 +204,7 @@ UIWindow *window;
 -(void)cancelButtonPressed {
 	if(window) {
 		[window release];
+		[vcont loadView];
 	} else {
 		%orig;
 	}
@@ -218,6 +215,17 @@ UIWindow *window;
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
 	if(window) {
 		[window release];
+		[vcont loadView];
+	} 
+	return %orig;
+}
+%end
+
+%hook SpringBoard
+-(void)menuButtonUp:(id)arg1 {
+	if(window) {
+		[window release];
+		[vcont loadView];
 	} 
 	return %orig;
 }
