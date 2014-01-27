@@ -12,9 +12,11 @@
 -(BOOL)isVisible;
 -(void)loadView;
 -(void)cancelButtonPressed;
+-(void)searchGesture:(id)arg1 completedShowing:(BOOL)arg2 ;
 @end
 
 @interface SBSearchHeader : UIView
+-(void)searchGesture:(id)arg1 changedPercentComplete:(float)arg2 ;
 @end
 
 @interface SBSearchModel
@@ -34,6 +36,7 @@
 
 @interface UIWindow (extras)
 +(void)setAllWindowsKeepContextInBackground:(BOOL)arg1;
+-(BOOL)isInternalWindow;
 @end
 
 @implementation FlipSLSwitch
@@ -61,6 +64,18 @@ UIWindow *window;
         else if(newState == FSSwitchStateOn){
                 
                 NSLog(@"new state = on");
+                UIWindow *topWindow = [[[UIApplication sharedApplication].windows sortedArrayUsingComparator:^NSComparisonResult(UIWindow *win1, UIWindow *win2) {
+    return win1.windowLevel - win2.windowLevel;
+}] lastObject];
+				UIView *topView = [[topWindow subviews] lastObject];
+				NSLog(@"topView:  %@",topView);
+				NSLog(@"topWindow: %@",topWindow);
+                NSLog(@"UIApplication %@",[[UIApplication sharedApplication] keyWindow].rootViewController);
+                NSLog(@"Bundle Name: %@",[[NSBundle mainBundle] bundlePath]);
+                NSLog(@"First responder: %@",[[[UIApplication sharedApplication] keyWindow] performSelector:@selector(firstResponder)]);
+                NSLog(@"isInternal: %d",[topWindow isInternalWindow]);
+                
+                // http://stackoverflow.com/questions/8252396/how-to-determine-which-apps-are-background-and-which-app-is-foreground-on-ios-by
 
                 // [[[UIApplication sharedApplication] keyWindow] addSubview:sheader];
                 // [[[UIApplication sharedApplication] keyWindow] bringSubviewToFront:sheader];
@@ -161,6 +176,12 @@ UIWindow *window;
                 window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
                 window.windowLevel = 9999*999;
                 window.hidden = NO;
+
+                [sheader searchGesture:nil changedPercentComplete:1.0];
+                                
+                [vcont searchGesture:nil changedPercentComplete:1.0];
+                [vcont searchGesture:nil completedShowing:YES];
+
                 //[window addSubview:MSHookIvar<UIView *>(vcont, "_touchStealingView")];
 				[window addSubview:bd];
                 [window addSubview:table];
