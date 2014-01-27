@@ -29,6 +29,7 @@
 
 @interface SpringBoard
 -(void)menuButtonUp:(id)arg1;
+-(void)_revealSpotlight;
 @end
 
 @interface UIApplication (extras)
@@ -70,9 +71,7 @@ SBSearchViewController *vcont;
             if ([[%c(SpringBoard) sharedApplication] _accessibilityFrontMostApplication] == NULL) {
                 //http://stackoverflow.com/questions/21373606/find-out-active-application-or-if-on-springboard/21373632
                 [vcont loadView];
-                [sheader searchGesture:nil changedPercentComplete:1.0];
-                [vcont searchGesture:nil changedPercentComplete:1.0];
-                [vcont searchGesture:nil completedShowing:YES];
+                [(SpringBoard *)[UIApplication sharedApplication] _revealSpotlight];
     		} else {
                 NSLog(@"new state = on");
 
@@ -203,8 +202,8 @@ SBSearchViewController *vcont;
 %hook SBSearchViewController
 -(void)cancelButtonPressed {
 	if(window) {
-		[window release];
 		[vcont loadView];
+		[window release];
 	} else {
 		%orig;
 	}
@@ -214,8 +213,8 @@ SBSearchViewController *vcont;
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
 	if(window) {
-		[window release];
 		[vcont loadView];
+		[window release];
 	} 
 	return %orig;
 }
@@ -226,7 +225,8 @@ SBSearchViewController *vcont;
 	if(window) {
 		[window release];
 		[vcont loadView];
-	} 
-	return %orig;
+	} else {
+		return %orig;
+	}
 }
 %end
