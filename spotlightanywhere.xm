@@ -29,7 +29,7 @@
 @end
 
 @interface SpringBoard
--(void)menuButtonUp:(id)arg1;
+-(void)_menuButtonUp:(id)arg1;
 -(void)_revealSpotlight;
 -(void)quitTopApplication:(id)arg1 ;
 -(void)applicationSuspend:(id)arg1 ;
@@ -73,6 +73,7 @@ SBSearchViewController *vcont;
         else if(newState == FSSwitchStateOn){
             if ([[%c(SpringBoard) sharedApplication] _accessibilityFrontMostApplication] == NULL) {
                 //http://stackoverflow.com/questions/21373606/find-out-active-application-or-if-on-springboard/21373632
+                window = nil;
                 [vcont loadView];
                 [(SpringBoard *)[UIApplication sharedApplication] _revealSpotlight];
     		} else {
@@ -191,6 +192,7 @@ SBSearchViewController *vcont;
 	                [vcont searchGesture:nil changedPercentComplete:0.0];
 	                [vcont searchGesture:nil completedShowing:NO];
 	                [window release];
+	                window = nil;
                 }
                 
                 //[ges resetAnimated:TRUE];
@@ -207,6 +209,7 @@ SBSearchViewController *vcont;
 	if(window) {
 		[vcont loadView];
 		[window release];
+		window = nil;
 	} else {
 		%orig;
 	}
@@ -220,13 +223,14 @@ SBSearchViewController *vcont;
         [vcont searchGesture:nil completedShowing:NO];
 		[vcont loadView];
 		[window release];
+		window = nil;
 	} 
 	return %orig;
 }
 %end
 
 %hook SpringBoard //Is activator fucking this up?
--(void)menuButtonUp:(id)arg1 { //This doesn't run, wrong method
+-(void)_menuButtonUp:(id)arg1 { //This doesn't run, wrong method
 	NSLog(@"inside here 1");
 	if(window) {
 		[vcont searchGesture:nil changedPercentComplete:0.0];
@@ -234,32 +238,7 @@ SBSearchViewController *vcont;
         [vcont _setShowingKeyboard:NO];
         [vcont loadView];
 		[window release];
-	} else {
-		%orig;
-	}
-}
-
--(void)quitTopApplication:(id)arg1  { //This doesn't run, wrong method
-	NSLog(@"inside here 2");
-	if(window) {
-		[vcont searchGesture:nil changedPercentComplete:0.0];
-        [vcont searchGesture:nil completedShowing:NO];
-        [vcont _setShowingKeyboard:NO];
-        [vcont loadView];
-		[window release];
-	} else {
-		%orig;
-	}
-}
-
--(void)applicationSuspend:(id)arg1 { //This doesn't run, wrong method
-	NSLog(@"inside here 3");
-	if(window) {
-		[vcont searchGesture:nil changedPercentComplete:0.0];
-        [vcont searchGesture:nil completedShowing:NO];
-        [vcont _setShowingKeyboard:NO];
-        [vcont loadView];
-		[window release];
+		window = nil;
 	} else {
 		%orig;
 	}
