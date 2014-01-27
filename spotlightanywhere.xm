@@ -48,7 +48,8 @@ UIWindow *window;
         UITableView *table = MSHookIvar<UITableView *>(vcont, "_tableView");
 		SBSearchResultsBackdropView *bd = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
 		UIView *ts = MSHookIvar<UIView *>(vcont, "_touchStealingView");
-
+		UIView *ts = MSHookIvar<UIView *>(vcont, "_view");
+		
         if(newState == FSSwitchStateIndeterminate)
                 return;
 
