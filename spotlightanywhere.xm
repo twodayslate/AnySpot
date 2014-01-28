@@ -130,7 +130,7 @@ SBRootFolderView *fv = nil;
 
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
-	NSLog(@"inside"); //called when hitting on note
+	NSLog(@"inside"); //not called for top hit?
 	if([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
 		NSLog(@"is locked");
 	} 
