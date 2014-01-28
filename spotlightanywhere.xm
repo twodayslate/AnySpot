@@ -15,6 +15,7 @@
 -(void)searchGesture:(id)arg1 completedShowing:(BOOL)arg2 ;
 -(void)_setShowingKeyboard:(BOOL)arg1 ;
 -(void)_resetViewController;
+-(id)_window;
 @end
 
 @interface SBSearchHeader : UIView
@@ -22,7 +23,7 @@
 @end
 
 @interface SBSearchModel
--(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 ;
+-(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3;
 @end
 
 @interface SBApplication
@@ -49,6 +50,23 @@
 -(BOOL)isInternalWindow;
 @end
 
+@interface SBRootFolderView : UIView
+@end
+
+@interface SBSearchGesture
++(id)sharedInstance;
+-(void)revealAnimated:(BOOL)arg1 ;
+-(void)resetAnimated:(BOOL)arg1;
+@end
+
+@interface SBIcon
+-(void)launchFromLocation:(int)arg1 ;
+@end
+
+@interface SBApplicationIcon : SBIcon
+@end
+
+
 @implementation FlipSLSwitch
 
 -(FSSwitchState)stateForSwitchIdentifier:(NSString *)switchIdentifier{
@@ -56,9 +74,10 @@
         return [vcont isVisible]?FSSwitchStateOn:FSSwitchStateOff;
 }
 
-UIWindow *window;
-SBSearchViewController *vcont;
-
+UIWindow *window = nil;
+SBSearchViewController *vcont = nil;
+SBRootFolderView *fv = nil;
+//BOOL willLaunch = FALSE;
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
         vcont = [objc_getClass("SBSearchViewController") sharedInstance];
         SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
@@ -68,21 +87,25 @@ SBSearchViewController *vcont;
 		//SBSearchResultsBackdropView *bd = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
 		//UIView *ts = MSHookIvar<UIView *>(vcont, "_touchStealingView");
 		UIView *view = MSHookIvar<UIView *>(vcont, "_view");
+		SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
+		if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
+			fv = (SBRootFolderView *)[view superview];
+		}
+		//NSLog(@"_view = %@",view);
+		//NSLog(@"_view superview = %@",[view superview]);
+		//NSLog(@"sbrootfolderview = %@",fv);
 
         if(newState == FSSwitchStateIndeterminate)
                 return;
 
         else if(newState == FSSwitchStateOn){
-
-                NSLog(@"new state = on");
-
                 window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
                 window.windowLevel = 9999*999;
                 window.hidden = NO;
                 window.rootViewController = vcont;
 
                 [window addSubview:view];
-                [window addSubview:sheader];
+                //[window addSubview:sheader];
                 [window makeKeyAndVisible];
 
                 sheader.hidden = NO;
@@ -90,68 +113,82 @@ SBSearchViewController *vcont;
 				view.hidden = NO;
 				[view setAlpha:1.0];
 
-     			[vcont searchGesture:nil changedPercentComplete:1.0];
-                [vcont searchGesture:nil completedShowing:YES];
-                [sheader searchGesture:nil changedPercentComplete:1.0]; 
+				//[sheader searchGesture:nil changedPercentComplete:1.0];
+     			//[vcont searchGesture:nil changedPercentComplete:1.0];
+                //[vcont searchGesture:nil completedShowing:YES];
+                [ges revealAnimated:TRUE];
              
         } else if(newState == FSSwitchStateOff){
-                
-                NSLog(@"new state = off");
-                [vcont loadView];
-                [sheader searchGesture:nil changedPercentComplete:0.0];
-                [vcont searchGesture:nil changedPercentComplete:0.0];
-                [vcont searchGesture:nil completedShowing:NO]; 
-	            [vcont loadView];
-	            if(window) { [window release]; } 
-                window = nil;
-                //[ges resetAnimated:TRUE];
+                //[vcont searchGesture:nil changedPercentComplete:0.0];
+                //[vcont searchGesture:nil completedShowing:NO]; 
+                [ges resetAnimated:TRUE];
+         
         }
         
 }
-
-
-
 @end
-
-
-%hook SBSearchViewController
--(void)cancelButtonPressed {
-	if(window) {
-		[vcont loadView];
-        [vcont searchGesture:nil changedPercentComplete:0.0];
-        [vcont searchGesture:nil completedShowing:NO];
-		if(window) { [window release]; }
-		window = nil;
-	} else {
-		%orig;
-	}
-}
-%end
 
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
-	if(window) {
-		[vcont searchGesture:nil changedPercentComplete:0.0];
-        [vcont searchGesture:nil completedShowing:NO];
-		[vcont loadView];
-		if(window) { [window release]; }
-		window = nil;
+	NSLog(@"inside"); //called when hitting on note
+	if([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+		NSLog(@"is locked");
 	} 
 	return %orig;
 }
 %end
 
-%hook SpringBoard //Is activator fucking this up?
--(void)_menuButtonUp:(id)arg1 { //This doesn't run, wrong method
+%hook SBSearchGesture
+-(void)resetAnimated:(BOOL)arg1 {
+	%log;
+	%orig;
 	if(window) {
-		[vcont searchGesture:nil changedPercentComplete:0.0];
-        [vcont searchGesture:nil completedShowing:NO];
-        [vcont _setShowingKeyboard:NO];
-        [vcont loadView];
-		if(window) { [window release]; }
+		[fv addSubview:[[window subviews] objectAtIndex:0]];
+		[window release];
 		window = nil;
-	} else {
-		%orig;
 	}
 }
+%end
+
+%hook UIApplication
+-(BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2  {
+	%log;
+	return %orig;
+	if(window) {
+		[fv addSubview:[[window subviews] objectAtIndex:0]];
+		[window release];
+		window = nil;
+	}
+}
+%end
+
+%hook SBSearchViewController
+-(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2  {
+	%log;
+	%orig;
+	//willLaunch = TRUE;
+}
+%end
+
+%hook SpringBoard
+-(BOOL)_launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2  {
+	%log;
+	return %orig;
+}
+-(BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2  {
+	%log;
+	return %orig;
+}
+-(BOOL)_accessibilityShouldAllowAppLaunch { %log; return %orig;}
+%end
+
+
+%hook SBApplicationIcon
+- (void)launchFromLocation:(int)location { //0 = SB, 4 = SP
+        %log; 
+        NSLog(@"displayIdentifier = %@",MSHookIvar<UIView *>(self, "_displayIdentifier"));
+        %orig;
+
+}
+-(void)launch { %log; %orig; }
 %end
