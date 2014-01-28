@@ -6,7 +6,7 @@
 @interface FlipSLSwitch : NSObject <FSSwitchDataSource>
 @end
 
-@interface SBSearchViewController
+@interface SBSearchViewController : UIViewController
 +(id)sharedInstance;
 -(void)searchGesture:(id)arg1 changedPercentComplete:(float)arg2;
 -(BOOL)isVisible;
@@ -14,6 +14,7 @@
 -(void)cancelButtonPressed;
 -(void)searchGesture:(id)arg1 completedShowing:(BOOL)arg2 ;
 -(void)_setShowingKeyboard:(BOOL)arg1 ;
+-(void)_resetViewController;
 @end
 
 @interface SBSearchHeader : UIView
@@ -63,97 +64,49 @@ SBSearchViewController *vcont;
         SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
         //UIView *container = MSHookIvar<UIView *>(sheader, "_container");
         //UITextField *search = MSHookIvar<UITextField *>(sheader, "_searchField");
-        UITableView *table = MSHookIvar<UITableView *>(vcont, "_tableView");
-		SBSearchResultsBackdropView *bd = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
+        //UITableView *table = MSHookIvar<UITableView *>(vcont, "_tableView");
+		//SBSearchResultsBackdropView *bd = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
 		//UIView *ts = MSHookIvar<UIView *>(vcont, "_touchStealingView");
-		//UIView *view = MSHookIvar<UIView *>(vcont, "_view");
-		
+		UIView *view = MSHookIvar<UIView *>(vcont, "_view");
+
         if(newState == FSSwitchStateIndeterminate)
                 return;
 
         else if(newState == FSSwitchStateOn){
-            if ([[%c(SpringBoard) sharedApplication] _accessibilityFrontMostApplication] == NULL && ![(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
-                //http://stackoverflow.com/questions/21373606/find-out-active-application-or-if-on-springboard/21373632
-                window = nil;
-                [vcont loadView];
-                [(SpringBoard *)[UIApplication sharedApplication] _revealSpotlight];
-    		} else {
+
                 NSLog(@"new state = on");
 
-                CGPoint newCenter = sheader.center;
-				newCenter.x = 160;
-				CGRect newBounds = CGRectMake(0, 0, 320, 73);
-
-				sheader.hidden = NO;
-				[sheader setAlpha:1.0];
-
-                [UIView animateWithDuration:1.0 
-			    animations:^{
-			        sheader.center = newCenter;
-			        sheader.bounds = newBounds;
-			    }];
-
-                newCenter = table.center;
-				newCenter.x = 160;
-				newCenter.y = 320.5;
-				newBounds = CGRectMake(0, 0, 320, 495);
-				CGRect newFrame = CGRectMake(0,73,320,495);
-
-				table.hidden = NO;
-				[table setAlpha:1.0];
-
-                [UIView animateWithDuration:1.0 
-			    animations:^{
-			        table.center = newCenter;
-			        table.bounds = newBounds;
-			        table.frame = newFrame;
-			    }];
-
-
-
-			    newCenter = bd.center;
-				newCenter.x = 160;
-				newCenter.y = 320.5;
-				newBounds = CGRectMake(0, 0, 320, 495);
-				newFrame = CGRectMake(0,73,320,495);
-
-				bd.hidden = NO;
-				[bd setAlpha:1.0];
-
-                [UIView animateWithDuration:1.0 
-			    animations:^{
-			        bd.center = newCenter;
-			        bd.bounds = newBounds;
-			        bd.frame = newFrame;
-			    }];
                 window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
                 window.windowLevel = 9999*999;
                 window.hidden = NO;
+                window.rootViewController = vcont;
 
-                [sheader searchGesture:nil changedPercentComplete:1.0];
-                                
-                [vcont searchGesture:nil changedPercentComplete:1.0];
-                [vcont searchGesture:nil completedShowing:YES];
-
-                //[window addSubview:MSHookIvar<UIView *>(vcont, "_touchStealingView")];
-				[window addSubview:bd];
-                [window addSubview:table];
+                [window addSubview:view];
                 [window addSubview:sheader];
-             }
+                [window makeKeyAndVisible];
+
+                sheader.hidden = NO;
+				[sheader setAlpha:1.0];
+				view.hidden = NO;
+				[view setAlpha:1.0];
+
+     			[vcont searchGesture:nil changedPercentComplete:1.0];
+                [vcont searchGesture:nil completedShowing:YES];
+                [sheader searchGesture:nil changedPercentComplete:1.0]; 
+             
         } else if(newState == FSSwitchStateOff){
                 
                 NSLog(@"new state = off");
-                if(window) {
-                	[vcont loadView];
-	                [sheader searchGesture:nil changedPercentComplete:0.0];
-	                [vcont searchGesture:nil changedPercentComplete:0.0];
-	                [vcont searchGesture:nil completedShowing:NO];
-	                [window release];
-	                window = nil;
-                }
-                
+                [vcont loadView];
+                [sheader searchGesture:nil changedPercentComplete:0.0];
+                [vcont searchGesture:nil changedPercentComplete:0.0];
+                [vcont searchGesture:nil completedShowing:NO]; 
+	            [vcont loadView];
+	            if(window) { [window release]; } 
+                window = nil;
                 //[ges resetAnimated:TRUE];
         }
+        
 }
 
 
@@ -167,7 +120,7 @@ SBSearchViewController *vcont;
 		[vcont loadView];
         [vcont searchGesture:nil changedPercentComplete:0.0];
         [vcont searchGesture:nil completedShowing:NO];
-		[window release];
+		if(window) { [window release]; }
 		window = nil;
 	} else {
 		%orig;
@@ -181,7 +134,7 @@ SBSearchViewController *vcont;
 		[vcont searchGesture:nil changedPercentComplete:0.0];
         [vcont searchGesture:nil completedShowing:NO];
 		[vcont loadView];
-		[window release];
+		if(window) { [window release]; }
 		window = nil;
 	} 
 	return %orig;
@@ -190,13 +143,12 @@ SBSearchViewController *vcont;
 
 %hook SpringBoard //Is activator fucking this up?
 -(void)_menuButtonUp:(id)arg1 { //This doesn't run, wrong method
-	NSLog(@"inside here 1");
 	if(window) {
 		[vcont searchGesture:nil changedPercentComplete:0.0];
         [vcont searchGesture:nil completedShowing:NO];
         [vcont _setShowingKeyboard:NO];
         [vcont loadView];
-		[window release];
+		if(window) { [window release]; }
 		window = nil;
 	} else {
 		%orig;
