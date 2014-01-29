@@ -36,6 +36,7 @@
 -(void)quitTopApplication:(id)arg1 ;
 -(void)applicationSuspend:(id)arg1 ;
 -(BOOL)isLocked;
+-(BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2 ;
 @end
 
 @interface UIApplication (extras)
@@ -77,7 +78,7 @@
 UIWindow *window = nil;
 SBSearchViewController *vcont = nil;
 SBRootFolderView *fv = nil;
-//BOOL willLaunch = FALSE;
+BOOL willLaunch = FALSE;
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
         vcont = [objc_getClass("SBSearchViewController") sharedInstance];
         SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
@@ -134,6 +135,7 @@ SBRootFolderView *fv = nil;
 	if([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
 		NSLog(@"is locked");
 	} 
+	willLaunch = FALSE;
 	return %orig;
 }
 %end
@@ -165,6 +167,7 @@ SBRootFolderView *fv = nil;
 %hook SBSearchViewController
 -(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2  {
 	%log;
+	willLaunch = TRUE;
 	%orig;
 	//willLaunch = TRUE;
 }
@@ -187,6 +190,10 @@ SBRootFolderView *fv = nil;
 - (void)launchFromLocation:(int)location { //0 = SB, 4 = SP
         %log; 
         NSLog(@"displayIdentifier = %@",MSHookIvar<UIView *>(self, "_displayIdentifier"));
+        if (willLaunch) {
+        	willLaunch = FALSE;
+        	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<UIView *>(self, "_displayIdentifier") suspended:NO];
+        }
         %orig;
 
 }
