@@ -75,66 +75,45 @@
         return [vcont isVisible]?FSSwitchStateOn:FSSwitchStateOff;
 }
 
-UIWindow *window = nil;
-SBSearchViewController *vcont = nil;
-SBRootFolderView *fv = nil;
-BOOL willLaunch = FALSE;
+static UIWindow *window = nil;
+static SBSearchViewController *vcont = nil;
+static SBRootFolderView *fv = nil;
+static BOOL willLaunch = FALSE;
+
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
-        vcont = [objc_getClass("SBSearchViewController") sharedInstance];
-        SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
-        //UIView *container = MSHookIvar<UIView *>(sheader, "_container");
-        //UITextField *search = MSHookIvar<UITextField *>(sheader, "_searchField");
-        //UITableView *table = MSHookIvar<UITableView *>(vcont, "_tableView");
-		//SBSearchResultsBackdropView *bd = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
-		//UIView *ts = MSHookIvar<UIView *>(vcont, "_touchStealingView");
-		UIView *view = MSHookIvar<UIView *>(vcont, "_view");
-		SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
-		if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
-			fv = (SBRootFolderView *)[view superview];
+    vcont = [objc_getClass("SBSearchViewController") sharedInstance];
+    SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
+	UIView *view = MSHookIvar<UIView *>(vcont, "_view");
+	SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
+	if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
+		fv = (SBRootFolderView *)[view superview];
+	}
+	
+	switch (newState){
+		case FSSwitchStateIndeterminate: return;
+		case FSSwitchStateOff:
+			[ges resetAnimated:TRUE];
+			break;
+		case FSSwitchStateOn:{
+            window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            window.windowLevel = 9999*999;
+            window.hidden = NO;
+            window.rootViewController = vcont;
+
+            [window addSubview:view];
+            [window makeKeyAndVisible];
+
+            sheader.hidden = NO;
+			[sheader setAlpha:1.0];
+			view.hidden = NO;
+			[view setAlpha:1.0];
+            [ges revealAnimated:TRUE];
 		}
-		//NSLog(@"_view = %@",view);
-		//NSLog(@"_view superview = %@",[view superview]);
-		//NSLog(@"sbrootfolderview = %@",fv);
-
-        if(newState == FSSwitchStateIndeterminate)
-                return;
-
-        else if(newState == FSSwitchStateOn){
-                window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-                window.windowLevel = 9999*999;
-                window.hidden = NO;
-                window.rootViewController = vcont;
-
-                [window addSubview:view];
-                //[window addSubview:sheader];
-                [window makeKeyAndVisible];
-
-                sheader.hidden = NO;
-				[sheader setAlpha:1.0];
-				view.hidden = NO;
-				[view setAlpha:1.0];
-
-				//[sheader searchGesture:nil changedPercentComplete:1.0];
-     			//[vcont searchGesture:nil changedPercentComplete:1.0];
-                //[vcont searchGesture:nil completedShowing:YES];
-                [ges revealAnimated:TRUE];
-             
-        } else if(newState == FSSwitchStateOff){
-                //[vcont searchGesture:nil changedPercentComplete:0.0];
-                //[vcont searchGesture:nil completedShowing:NO]; 
-                [ges resetAnimated:TRUE];
-         
-        }
-        
+	}
 }
 @end
-
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
-	NSLog(@"inside launchingURLForResult"); //not called for top hit?
-	if([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
-		NSLog(@"is locked");
-	} 
 	willLaunch = FALSE;
 	return %orig;
 }
@@ -142,20 +121,7 @@ BOOL willLaunch = FALSE;
 
 %hook SBSearchGesture
 -(void)resetAnimated:(BOOL)arg1 {
-	%log;
 	%orig;
-	if(window) {
-		[fv addSubview:[[window subviews] objectAtIndex:0]];
-		[window release];
-		window = nil;
-	}
-}
-%end
-
-%hook UIApplication
--(BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2  {
-	%log;
-	return %orig;
 	if(window) {
 		[fv addSubview:[[window subviews] objectAtIndex:0]];
 		[window release];
@@ -166,36 +132,17 @@ BOOL willLaunch = FALSE;
 
 %hook SBSearchViewController
 -(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2  {
-	%log;
 	willLaunch = TRUE;
 	%orig;
-	//willLaunch = TRUE;
 }
 %end
-
-%hook SpringBoard
--(BOOL)_launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2  {
-	%log;
-	return %orig;
-}
--(BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2  {
-	%log;
-	return %orig;
-}
--(BOOL)_accessibilityShouldAllowAppLaunch { %log; return %orig;}
-%end
-
 
 %hook SBApplicationIcon
-- (void)launchFromLocation:(int)location { //0 = SB, 4 = SP
-        %log; 
-        NSLog(@"displayIdentifier = %@",MSHookIvar<UIView *>(self, "_displayIdentifier"));
-        if (willLaunch) {
-        	willLaunch = FALSE;
-        	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<UIView *>(self, "_displayIdentifier") suspended:NO];
-        }
-        %orig;
-
+- (void)launchFromLocation:(int)location {
+	if (willLaunch) {
+		willLaunch = FALSE;
+		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<UIView *>(self, "_displayIdentifier") suspended:NO];
+	}
+	%orig;
 }
--(void)launch { %log; %orig; }
 %end
