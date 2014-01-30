@@ -37,6 +37,7 @@
 -(void)applicationSuspend:(id)arg1 ;
 -(BOOL)isLocked;
 -(BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2 ;
+-(void)_rotateView:(id)arg1 toOrientation:(int)arg2;
 @end
 
 @interface UIApplication (extras)
@@ -58,6 +59,7 @@
 +(id)sharedInstance;
 -(void)revealAnimated:(BOOL)arg1 ;
 -(void)resetAnimated:(BOOL)arg1;
+-(void)updateForRotation;
 @end
 
 @interface SBIcon
@@ -107,6 +109,7 @@ static BOOL willLaunch = FALSE;
 			[sheader setAlpha:1.0];
 			view.hidden = NO;
 			[view setAlpha:1.0];
+
             [ges revealAnimated:TRUE];
 		}
 	}
@@ -135,6 +138,21 @@ static BOOL willLaunch = FALSE;
 	willLaunch = TRUE;
 	%orig;
 }
+-(void)willRotateToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
+	%log;
+	%orig;
+	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+}
+-(void)willAnimateRotationToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
+	%log;
+	%orig;
+	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+}
+-(void)didRotateFromInterfaceOrientation:(int)arg1 {
+		%log;	
+		%orig;	
+		[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+}
 %end
 
 %hook SBApplicationIcon
@@ -145,4 +163,12 @@ static BOOL willLaunch = FALSE;
 	}
 	%orig;
 }
+%end
+	
+%hook SpringBoard
+	-(void)_rotateView:(id)arg1 toOrientation:(int)arg2 {
+		%log;
+		%orig;
+		//[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+	}
 %end
