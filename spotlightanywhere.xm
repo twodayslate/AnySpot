@@ -38,6 +38,8 @@
 -(BOOL)isLocked;
 -(BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2 ;
 -(void)_rotateView:(id)arg1 toOrientation:(int)arg2;
+-(void)showSpringBoardStatusBar;
+-(id)statusBar;
 @end
 
 @interface UIApplication (extras)
@@ -69,6 +71,19 @@
 @interface SBApplicationIcon : SBIcon
 @end
 
+@interface SBLockScreenManager 
++(id)sharedInstance;
+-(id)lockScreenViewController;
+-(void)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2;
+@end 
+
+@interface UIStatusBar
+-(id)statusBarWindow;
+@end
+
+@interface SBlockScreenViewControllerBase
+-(void)setPasscodeLockVisible:(BOOL)arg1 animated:(BOOL)arg2;
+@end
 
 @implementation FlipSLSwitch
 
@@ -81,12 +96,14 @@ static UIWindow *window = nil;
 static SBSearchViewController *vcont = nil;
 static SBRootFolderView *fv = nil;
 static BOOL willLaunch = FALSE;
+static NSString *displayIdentifier = @"";
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
     vcont = [objc_getClass("SBSearchViewController") sharedInstance];
-    SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
+    //SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
 	UIView *view = MSHookIvar<UIView *>(vcont, "_view");
 	SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
+	
 	if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
 		fv = (SBRootFolderView *)[view superview];
 	}
@@ -97,27 +114,44 @@ static BOOL willLaunch = FALSE;
 			[ges resetAnimated:TRUE];
 			break;
 		case FSSwitchStateOn:{
+			
+			
             window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-            window.windowLevel = 9999*999;
+            window.windowLevel = 998; //one less than the statusbar
+			if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+				window.windowLevel = 1051;
+			}
             window.hidden = NO;
             window.rootViewController = vcont;
-
+			
             [window addSubview:view];
             [window makeKeyAndVisible];
-
-            sheader.hidden = NO;
-			[sheader setAlpha:1.0];
-			view.hidden = NO;
-			[view setAlpha:1.0];
-
-            [ges revealAnimated:TRUE];
+			
+			//UIStatusBar *status = [(SpringBoard *)[UIApplication sharedApplication] statusBar];
+			//NSLog(@"Statusbar WindowLevel = %f",((UIWindow *)[status statusBarWindow]).windowLevel);
+			
+			[ges revealAnimated:TRUE];
+            
 		}
 	}
 }
 @end
+
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
-	willLaunch = FALSE;
+	%log;
+	if(willLaunch) {
+		NSLog(@"inside willLaunch");
+		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:arg2 suspended:NO];
+		if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+			[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
+			displayIdentifier = arg2;
+			willLaunch = TRUE;
+		}
+		
+	} else {
+		willLaunch = FALSE;
+	}
 	return %orig;
 }
 %end
@@ -131,10 +165,15 @@ static BOOL willLaunch = FALSE;
 		window = nil;
 	}
 }
+-(void)updateForRotation {
+	%log;
+	%orig;
+}
 %end
 
 %hook SBSearchViewController
 -(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2  {
+	%log;
 	willLaunch = TRUE;
 	%orig;
 }
@@ -157,9 +196,15 @@ static BOOL willLaunch = FALSE;
 
 %hook SBApplicationIcon
 - (void)launchFromLocation:(int)location {
+	%log;
 	if (willLaunch) {
 		willLaunch = FALSE;
-		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<UIView *>(self, "_displayIdentifier") suspended:NO];
+		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<NSString *>(self, "_displayIdentifier") suspended:NO];
+		if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+			[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
+			displayIdentifier = MSHookIvar<NSString *>(self, "_displayIdentifier");
+			willLaunch = TRUE;
+		}
 	}
 	%orig;
 }
@@ -171,4 +216,14 @@ static BOOL willLaunch = FALSE;
 		%orig;
 		//[[%c(SBSearchGesture) sharedInstance] updateForRotation];
 	}
+%end
+	
+	%hook SBLockScreenManager
+		-(void)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
+			%log; %orig;
+			if(willLaunch) {
+				[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:displayIdentifier suspended:NO];
+				willLaunch = FALSE;
+			}
+		}
 %end

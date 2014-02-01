@@ -1,5 +1,5 @@
 Package: com.twodayslate.anyspot
-Name: anyspot
+Name: AnySpot
 Depends: mobilesubstrate, com.a3tweaks.flipswitch
 Version: 0.91
 Architecture: iphoneos-arm
