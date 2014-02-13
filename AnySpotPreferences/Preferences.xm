@@ -34,7 +34,7 @@
 }
 
 -(void)shareTapped:(UIBarButtonItem *)sender {
-	NSString *text = @"I've fallen in love with blur, thanks to #AnySpot by @twodayslate!";
+	NSString *text = @"I've fallen in love with AnySpot by @twodayslate!";
 	NSURL *url = [NSURL URLWithString:@"http://twodayslate.github.io/AnySpot"];
 
 	if (%c(UIActivityViewController)) {
