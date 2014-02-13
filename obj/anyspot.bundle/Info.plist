@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>anyspot</string>
+	<string>AnySpot</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.twodayslate.anyspot</string>
 	<key>CFBundleDisplayName</key>
@@ -23,8 +23,8 @@
 	<key>DTPlatformName</key>
 	<string>iphoneos</string>
 	<key>MinimumOSVersion</key>
-	<string>3.0</string>
+	<string>7.0</string>
 	<key>NSPrincipalClass</key>
-	<string>anyspotListController</string>
+	<string>AnySpotListController</string>
 </dict>
 </plist>

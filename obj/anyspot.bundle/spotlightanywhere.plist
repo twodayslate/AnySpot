@@ -18,9 +18,13 @@
 			<key>defaults</key>
 			<string>com.twodayslate.anyspot</string>
 			<key>key</key>
-			<string>AwesomeSwitch1</string>
+			<string>hidenc</string>
 			<key>label</key>
-			<string>Awesome Switch 1</string>
+			<string>Hide NC</string>
+			<key>key</key>
+			<string>hidecc</string>
+			<key>label</key>
+			<string>Hide CC</string>
 		</dict>
 	</array>
 	<key>title</key>

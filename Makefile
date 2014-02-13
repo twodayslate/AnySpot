@@ -1,6 +1,6 @@
-THEOS_DEVICE_IP=192.168.0.108
+THEOS_DEVICE_IP=192.168.0.105
 
-# THEOS_PACKAGE_DIR_NAME = debs
+THEOS_PACKAGE_DIR_NAME = debs
 TARGET := iphone:clang
 ARCHS := armv7 arm64
 
@@ -13,6 +13,7 @@ anyspot_FRAMEWORKS = UIKit
 anyspot_PRIVATE_FRAMEWORKS = Preferences
 anyspot_LIBRARIES = flipswitch substrate
 anyspot_ARCHS = armv7 arm64
+SUBPROJECTS += AnySpotPreferences
 
 #export SYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk
 

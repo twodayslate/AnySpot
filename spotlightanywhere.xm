@@ -85,6 +85,10 @@
 -(void)setPasscodeLockVisible:(BOOL)arg1 animated:(BOOL)arg2;
 @end
 
+@interface SBNotificationCenter
+-(void)dismissAnimated:(BOOL)arg1;
+@end
+
 @implementation FlipSLSwitch
 
 -(FSSwitchState)stateForSwitchIdentifier:(NSString *)switchIdentifier{
@@ -100,9 +104,10 @@ static NSString *displayIdentifier = @"";
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
     vcont = [objc_getClass("SBSearchViewController") sharedInstance];
-    //SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
+    SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
 	UIView *view = MSHookIvar<UIView *>(vcont, "_view");
 	SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
+	NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.twodayslate.anyspot.plist"]];
 	
 	if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
 		fv = (SBRootFolderView *)[view superview];
@@ -125,10 +130,22 @@ static NSString *displayIdentifier = @"";
             window.rootViewController = vcont;
 			
             [window addSubview:view];
+			[window addSubview:sheader];
             [window makeKeyAndVisible];
 			
 			//UIStatusBar *status = [(SpringBoard *)[UIApplication sharedApplication] statusBar];
 			//NSLog(@"Statusbar WindowLevel = %f",((UIWindow *)[status statusBarWindow]).windowLevel);
+			if([settings objectForKey:@"hidecc"]) {
+				SBControlCenterController *cccont = [%c(SBControlCenterController) sharedInstance];
+				if([cccont isVisible])
+					[cccont dismissAnimated:TRUE];
+			}
+			
+			if([settings objectForKey:@"hidenc"]){
+				SBNotificationCenterController *nccont = [%c(SBNotificationCenterController) sharedInstance];
+				if([nccont isVisible])
+					[nccont dismissAnimated:TRUE];
+			}
 			
 			[ges revealAnimated:TRUE];
             
@@ -139,9 +156,9 @@ static NSString *displayIdentifier = @"";
 
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
-	%log;
+	//%log;
 	if(willLaunch) {
-		NSLog(@"inside willLaunch");
+		//NSLog(@"inside willLaunch");
 		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:arg2 suspended:NO];
 		if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
 			[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
@@ -166,29 +183,29 @@ static NSString *displayIdentifier = @"";
 	}
 }
 -(void)updateForRotation {
-	%log;
+	//%log;
 	%orig;
 }
 %end
 
 %hook SBSearchViewController
 -(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2  {
-	%log;
+	//%log;
 	willLaunch = TRUE;
 	%orig;
 }
 -(void)willRotateToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
-	%log;
+	//%log;
 	%orig;
 	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
 }
 -(void)willAnimateRotationToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
-	%log;
+	//%log;
 	%orig;
 	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
 }
 -(void)didRotateFromInterfaceOrientation:(int)arg1 {
-		%log;	
+		//%log;	
 		%orig;	
 		[[%c(SBSearchGesture) sharedInstance] updateForRotation];
 }
@@ -196,7 +213,7 @@ static NSString *displayIdentifier = @"";
 
 %hook SBApplicationIcon
 - (void)launchFromLocation:(int)location {
-	%log;
+	//%log;
 	if (willLaunch) {
 		willLaunch = FALSE;
 		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<NSString *>(self, "_displayIdentifier") suspended:NO];
@@ -212,7 +229,7 @@ static NSString *displayIdentifier = @"";
 	
 %hook SpringBoard
 	-(void)_rotateView:(id)arg1 toOrientation:(int)arg2 {
-		%log;
+		//%log;
 		%orig;
 		//[[%c(SBSearchGesture) sharedInstance] updateForRotation];
 	}
@@ -220,7 +237,8 @@ static NSString *displayIdentifier = @"";
 	
 	%hook SBLockScreenManager
 		-(void)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
-			%log; %orig;
+			//%log; 
+			%orig;
 			if(willLaunch) {
 				[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:displayIdentifier suspended:NO];
 				willLaunch = FALSE;
