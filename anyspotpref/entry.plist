@@ -1,0 +1,10 @@
+{
+    entry = {
+	bundle = AnySpotPref;
+	cell = PSLinkCell;
+	detail = AnySpotPrefListController;
+	icon = AnySpotPref.png;
+	isController = 1;
+	label = AnySpotPref;
+    };
+}
