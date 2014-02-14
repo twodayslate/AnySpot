@@ -2,6 +2,8 @@
 #import "FSSwitchPanel.h"
 #import "CydiaSubstrate.h"
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface FlipSLSwitch : NSObject <FSSwitchDataSource>
 @end
@@ -130,18 +132,21 @@ static NSString *displayIdentifier = @"";
             window.rootViewController = vcont;
 			
             [window addSubview:view];
-			[window addSubview:sheader];
+            if(![settings objectForKey:@"qcsupport"]) {
+				[window addSubview:sheader];
+			}
+			
             [window makeKeyAndVisible];
 			
 			//UIStatusBar *status = [(SpringBoard *)[UIApplication sharedApplication] statusBar];
 			//NSLog(@"Statusbar WindowLevel = %f",((UIWindow *)[status statusBarWindow]).windowLevel);
-			if([settings objectForKey:@"hidecc"]) {
+			if(![settings objectForKey:@"hidecc"]) {
 				SBControlCenterController *cccont = [%c(SBControlCenterController) sharedInstance];
 				if([cccont isVisible])
 					[cccont dismissAnimated:TRUE];
 			}
 			
-			if([settings objectForKey:@"hidenc"]){
+			if(![settings objectForKey:@"hidenc"]){
 				SBNotificationCenterController *nccont = [%c(SBNotificationCenterController) sharedInstance];
 				if([nccont isVisible])
 					[nccont dismissAnimated:TRUE];
@@ -246,6 +251,18 @@ static NSString *displayIdentifier = @"";
 		}
 %end
 
+static void loadPrefs()
+{
+    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jontelang.sliderchangerprefs.plist"];
+    if(prefs)
+    {
+		//load prefs
+    }
+    [prefs release];
+}
+
 %ctor {
-    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("com.twodayslate.anyspot/settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
+    //CFNotificationCenterRef r = CFNotificationCenterGetDarwinNotifyCenter();
+    //CFNotificationCenterAddObserver(r, NULL, &loadPrefs, CFSTR("com.twodayslate.anyspot/reloadSettings"), NULL, 0);
+    loadPrefs();
 }

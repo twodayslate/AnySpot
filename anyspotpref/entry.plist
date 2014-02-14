@@ -5,6 +5,6 @@
 	detail = AnySpotPrefListController;
 	icon = AnySpotPref.png;
 	isController = 1;
-	label = AnySpotPref;
+	label = "AnySpot";
     };
 }
