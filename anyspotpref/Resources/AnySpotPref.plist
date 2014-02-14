@@ -18,7 +18,7 @@
 			<key>defaults</key>
 			<string>com.twodayslate.anyspot</string>
 			<key>key</key>
-			<string>hidenc</string>
+			<string>anyspot_hidenc</string>
 			<key>label</key>
 			<string>Notificiation Center</string>
 			<key>PostNotification</key>
@@ -32,9 +32,11 @@
 			<key>defaults</key>
 			<string>com.twodayslate.anyspot</string>
 			<key>key</key>
-			<string>Control Center</string>
+			<string>anyspot_hidecc</string>
 			<key>label</key>
-			<string>Hide CC</string>
+			<string>Control Center</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
 		</dict>
 
 		<dict>
@@ -42,23 +44,48 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Quick Contacts</string>
+			<key>footerText</key>
+			<string>If you are having graphical glitches, enable this</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<true/>
+			<false/>
 			<key>defaults</key>
 			<string>com.twodayslate.anyspot</string>
 			<key>key</key>
-			<string>qcsupport</string>
+			<string>anyspot_qcsupport</string>
 			<key>label</key>
 			<string>Add hotfix</string>
 			<key>PostNotification</key>
 			<string>com.twodayslate.anyspot/settingschanged</string>
+			
 		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Logging</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_logging</string>
+			<key>label</key>
+			<string>Enable</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
+		</dict>
+
 	</array>
 	<key>title</key>
-	<string>anyspot</string>
+	<string>AnySpot</string>
 </dict>
 </plist>

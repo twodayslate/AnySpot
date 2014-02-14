@@ -101,15 +101,21 @@
 static UIWindow *window = nil;
 static SBSearchViewController *vcont = nil;
 static SBRootFolderView *fv = nil;
-static BOOL willLaunch = FALSE;
+static BOOL willLaunchWithSBIcon = NO;
+static BOOL willlaunchWithURL = NO;
+static id sbicon = nil;
+static int sbloc = nil;
+static id urlResult = nil;
+static id section = nil;
 static NSString *displayIdentifier = @"";
+static id hidecc, hidenc, qcsupport, logging = nil;
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
     vcont = [objc_getClass("SBSearchViewController") sharedInstance];
     SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
 	UIView *view = MSHookIvar<UIView *>(vcont, "_view");
 	SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
-	NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.twodayslate.anyspot.plist"]];
+	//NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.twodayslate.anyspot.plist"]];
 	
 	if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
 		fv = (SBRootFolderView *)[view superview];
@@ -118,7 +124,7 @@ static NSString *displayIdentifier = @"";
 	switch (newState){
 		case FSSwitchStateIndeterminate: return;
 		case FSSwitchStateOff:
-			[ges resetAnimated:TRUE];
+			[ges resetAnimated:YES];
 			break;
 		case FSSwitchStateOn:{
 			
@@ -131,8 +137,8 @@ static NSString *displayIdentifier = @"";
             window.hidden = NO;
             window.rootViewController = vcont;
 			
-            [window addSubview:view];
-            if(![settings objectForKey:@"qcsupport"]) {
+            if(qcsupport) {
+            	[window addSubview:view];
 				[window addSubview:sheader];
 			}
 			
@@ -140,19 +146,21 @@ static NSString *displayIdentifier = @"";
 			
 			//UIStatusBar *status = [(SpringBoard *)[UIApplication sharedApplication] statusBar];
 			//NSLog(@"Statusbar WindowLevel = %f",((UIWindow *)[status statusBarWindow]).windowLevel);
-			if(![settings objectForKey:@"hidecc"]) {
+
+			if(hidecc) {
 				SBControlCenterController *cccont = [%c(SBControlCenterController) sharedInstance];
 				if([cccont isVisible])
-					[cccont dismissAnimated:TRUE];
+					[cccont dismissAnimated:YES];
 			}
 			
-			if(![settings objectForKey:@"hidenc"]){
+
+			if(hidenc){
 				SBNotificationCenterController *nccont = [%c(SBNotificationCenterController) sharedInstance];
 				if([nccont isVisible])
-					[nccont dismissAnimated:TRUE];
+					[nccont dismissAnimated:YES];
 			}
 			
-			[ges revealAnimated:TRUE];
+			[ges revealAnimated:YES];
             
 		}
 	}
@@ -161,19 +169,27 @@ static NSString *displayIdentifier = @"";
 
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
-	//%log;
-	if(willLaunch) {
-		//NSLog(@"inside willLaunch");
-		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:arg2 suspended:NO];
-		if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
-			[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
-			displayIdentifier = arg2;
-			willLaunch = TRUE;
-		}
-		
-	} else {
-		willLaunch = FALSE;
+	if(logging) %log;
+
+	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+		willlaunchWithURL = YES; 
+		willLaunchWithSBIcon = NO; 
+		urlResult = arg1; [urlResult retain];
+		displayIdentifier = arg2; [displayIdentifier retain];
+		section = arg3; [section retain];
 	}
+
+	// if(willLaunch) {
+	// 	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:arg2 suspended:NO];
+	// 	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+	// 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
+	// 		displayIdentifier = arg2;
+	// 		willLaunch = TRUE;
+	// 	}
+		
+	// } else {
+	// 	willLaunch = FALSE;
+	// }
 	return %orig;
 }
 %end
@@ -182,53 +198,69 @@ static NSString *displayIdentifier = @"";
 -(void)resetAnimated:(BOOL)arg1 {
 	%orig;
 	if(window) {
-		[fv addSubview:[[window subviews] objectAtIndex:0]];
+		for(id view in [window subviews]) {
+			[fv addSubview:view];
+		}
+		//[fv addSubview:[[window subviews] objectAtIndex:0]];
 		[window release];
 		window = nil;
 	}
 }
--(void)updateForRotation {
-	//%log;
-	%orig;
-}
+// -(void)updateForRotation {
+// 	//%log;
+// 	%orig;
+// }
 %end
 
 %hook SBSearchViewController
 -(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2  {
-	//%log;
-	willLaunch = TRUE;
+	if(logging) %log;
 	%orig;
+	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
+	}
 }
--(void)willRotateToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
-	//%log;
-	%orig;
-	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
-}
--(void)willAnimateRotationToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
-	//%log;
-	%orig;
-	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
-}
--(void)didRotateFromInterfaceOrientation:(int)arg1 {
-		//%log;	
-		%orig;	
-		[[%c(SBSearchGesture) sharedInstance] updateForRotation];
-}
+// -(void)willRotateToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
+// 	//%log;
+// 	%orig;
+// 	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+// }
+// -(void)willAnimateRotationToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
+// 	//%log;
+// 	%orig;
+// 	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+// }
+// -(void)didRotateFromInterfaceOrientation:(int)arg1 {
+// 		//%log;	
+// 		%orig;	
+// 		[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+// }
 %end
 
 %hook SBApplicationIcon
 - (void)launchFromLocation:(int)location {
-	//%log;
-	if (willLaunch) {
-		willLaunch = FALSE;
-		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<NSString *>(self, "_displayIdentifier") suspended:NO];
-		if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
-			[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
-			displayIdentifier = MSHookIvar<NSString *>(self, "_displayIdentifier");
-			willLaunch = TRUE;
-		}
+	if(logging) %log;
+
+	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+		willLaunchWithSBIcon = YES; 
+		willlaunchWithURL = NO; 
+		sbicon = self; [sbicon retain];
+		sbloc = location; 
 	}
+
 	%orig;
+	
+
+	// if (willLaunch) {
+	// 	willLaunch = FALSE;
+	// 	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<NSString *>(self, "_displayIdentifier") suspended:NO];
+	// 	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
+	// 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
+	// 		displayIdentifier = MSHookIvar<NSString *>(self, "_displayIdentifier");
+	// 		willLaunch = TRUE;
+	// 	}
+	// }
+	// %orig;
 }
 %end
 	
@@ -240,29 +272,43 @@ static NSString *displayIdentifier = @"";
 	}
 %end
 	
-	%hook SBLockScreenManager
-		-(void)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
-			//%log; 
-			%orig;
-			if(willLaunch) {
-				[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:displayIdentifier suspended:NO];
-				willLaunch = FALSE;
-			}
+%hook SBLockScreenManager
+	-(void)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
+		//%log; 
+		%orig;
+
+		if(willlaunchWithURL) {
+			willlaunchWithURL = NO; 
+			willLaunchWithSBIcon = NO;
+			//NSLog(@"will call launchingURLForResult %@ %@ %@",urlResult, displayIdentifier, section);
+			[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:displayIdentifier suspended:NO];
+			[[%c(SBSearchModel) sharedInstance] launchingURLForResult:urlResult withDisplayIdentifier:displayIdentifier andSection:section];
 		}
+		if(willLaunchWithSBIcon) {
+			willlaunchWithURL = NO; 
+			willLaunchWithSBIcon = NO; 
+		 	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<NSString *>(sbicon, "_displayIdentifier") suspended:NO];
+			[sbicon launchFromLocation:sbloc];
+		}
+	}
 %end
 
-static void loadPrefs()
-{
-    NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.jontelang.sliderchangerprefs.plist"];
-    if(prefs)
-    {
-		//load prefs
+static void loadPrefs() {
+	//NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.twodayslate.anyspot.plist"]];
+
+    NSMutableDictionary *settings = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.twodayslate.anyspot.plist"];
+
+    if(settings) {
+    	hidenc = [settings objectForKey:@"anyspot_hidenc"]; [hidenc retain];
+    	hidecc = [settings objectForKey:@"anyspot_hidecc"]; [hidecc retain];
+    	qcsupport = [settings objectForKey:@"anyspot_qcsupport"]; [qcsupport retain];
+    	logging = [settings objectForKey:@"anyspot_logging"]; [logging retain];
     }
-    [prefs release];
+    if(logging) NSLog(@"AnySpot: settings = %@",settings);
+    [settings release];
 }
 
 %ctor {
-    //CFNotificationCenterRef r = CFNotificationCenterGetDarwinNotifyCenter();
-    //CFNotificationCenterAddObserver(r, NULL, &loadPrefs, CFSTR("com.twodayslate.anyspot/reloadSettings"), NULL, 0);
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("com.twodayslate.anyspot/settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
     loadPrefs();
 }
