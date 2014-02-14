@@ -13,7 +13,13 @@ anyspot_FRAMEWORKS = UIKit
 anyspot_PRIVATE_FRAMEWORKS = Preferences
 anyspot_LIBRARIES = flipswitch substrate
 anyspot_ARCHS = armv7 arm64
-SUBPROJECTS += AnySpotPreferences
+include $(THEOS_MAKE_PATH)/tweak.mk
+
+BUNDLE_NAME = AnySpotPref
+AnySpotPref_Files = AnySpotPreferenceController.m
+AnySpotPref_INSTALL_PATH = /Library/PreferenceBundles
+AnySpotPref_PRIVATE_FRAMEWORKS = Preferences
+AnySpotPref_FRAMEWORKS = UIKit
 
 #export SYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk
 
