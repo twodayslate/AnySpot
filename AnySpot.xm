@@ -1,6 +1,6 @@
 #import "FSSwitchDataSource.h"
 #import "FSSwitchPanel.h"
-#import "CydiaSubstrate.h"
+#import "substrate.h"
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import <QuartzCore/QuartzCore.h>
@@ -108,7 +108,7 @@ static int sbloc = nil;
 static id urlResult = nil;
 static id section = nil;
 static NSString *displayIdentifier = @"";
-static id hidecc, hidenc, qcsupport, logging = nil;
+static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
     vcont = [objc_getClass("SBSearchViewController") sharedInstance];
@@ -137,8 +137,10 @@ static id hidecc, hidenc, qcsupport, logging = nil;
             window.hidden = NO;
             window.rootViewController = vcont;
 			
-            if(qcsupport) {
+            if(hotfix_one) {
             	[window addSubview:view];
+			}
+			if(hotfix_two) {
 				[window addSubview:sheader];
 			}
 			
@@ -281,7 +283,9 @@ static id hidecc, hidenc, qcsupport, logging = nil;
 			willlaunchWithURL = NO; 
 			willLaunchWithSBIcon = NO;
 			//NSLog(@"will call launchingURLForResult %@ %@ %@",urlResult, displayIdentifier, section);
-			[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:displayIdentifier suspended:NO];
+			if(logging) NSLog(@"AnySpot: urlResutl url = %@",[urlResult url]);
+			[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[[urlResult url] description]]];
+			//[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:displayIdentifier suspended:NO];
 			[[%c(SBSearchModel) sharedInstance] launchingURLForResult:urlResult withDisplayIdentifier:displayIdentifier andSection:section];
 		}
 		if(willLaunchWithSBIcon) {
@@ -301,7 +305,8 @@ static void loadPrefs() {
     if(settings) {
     	hidenc = [settings objectForKey:@"anyspot_hidenc"]; [hidenc retain];
     	hidecc = [settings objectForKey:@"anyspot_hidecc"]; [hidecc retain];
-    	qcsupport = [settings objectForKey:@"anyspot_qcsupport"]; [qcsupport retain];
+    	hotfix_one = [settings objectForKey:@"anyspot_hotfix_one"]; [hotfix_one retain];
+    	hotfix_two = [settings objectForKey:@"anyspot_hotfix_two"]; [hotfix_two retain];
     	logging = [settings objectForKey:@"anyspot_logging"]; [logging retain];
     }
     if(logging) NSLog(@"AnySpot: settings = %@",settings);
