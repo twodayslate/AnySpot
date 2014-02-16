@@ -45,7 +45,7 @@
 			<key>label</key>
 			<string>Hotfixes</string>
 			<key>footerText</key>
-			<string>If you are having graphical glitches or compatibility issues enable these.</string>
+			<string>If you are having graphical glitches or compatibility issues enable these. Respring may be required.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
