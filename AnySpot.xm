@@ -91,16 +91,8 @@
 -(void)dismissAnimated:(BOOL)arg1;
 @end
 
-@interface SBWallpaperEffectView : UIView {
-	UIImage* _maskImage;
-}
-+(id)imageInRect:(CGRect)arg1 forVariant:(int)arg2 withStyle:(int)arg3 zoomFactor:(float)arg4 mask:(id)arg5 masksBlur:(BOOL)arg6 masksTint:(BOOL)arg7 ;
--(void)setMaskImage:(id)arg1 masksBlur:(BOOL)arg2 masksTint:(BOOL)arg3 ;
+@interface SBWallpaperEffectView : UIView 
 -(void)setStyle:(int)arg1;
--(void)_updateWallpaperAverageColor:(id)arg1 ;
-@end
-
-@interface UIResizableView : UIView
 @end
 
 @implementation FlipSLSwitch
@@ -140,55 +132,18 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 			break;
 		case FSSwitchStateOn:{
 			SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
-			[blurView setStyle:0]; 
+			[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported)
 
 			UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:sheader.bounds];
 			toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 			[toolbar setTranslucent:YES];
 			[toolbar setBarStyle:UIBarStyleBlack];
 			[toolbar setTranslucent:YES];
-			toolbar.backgroundColor = [UIColor clearColor];
-			toolbar.alpha = 0.8;
+			//toolbar.backgroundColor = [UIColor clearColor];
+			//toolbar.alpha = 0.8;
+			//http://stackoverflow.com/questions/19511744/uitoolbar-tintcolor-and-bartintcolor-issues
+			toolbar.tintColor = [UIColor colorWithRed:9/255.0f green:153/255.0f blue:153/255.0f alpha:1.0f];
 			[sheader insertSubview:toolbar atIndex:0];
-			//0 is transparent, 1 is hidden (not supported)
-								   //2 is normal
-			// UIImage *backgroundImage = [self getImage];
-			// GPUImageiOSBlurFilter *_blurFilter = [[GPUImageiOSBlurFilter alloc] init];
-   //      	_blurFilter.blurRadiusInPixels = 1.0f;
-   //      	GPUImagePicture *picture = [[GPUImagePicture alloc] initWithImage:image];
-   //  		[picture addTarget:_blurFilter];
-   //  		[_blurFilter addTarget:_blurView];
-   //  		[sheader addSubview:picture];
-			// NSLog(@"_blurView = %@",blurView);
-
-			// UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-			// CGRect rect = [keyWindow bounds];
-			// UIGraphicsBeginImageContextWithOptions(rect.size,YES,0.0f);
-			// CGContextRef context = UIGraphicsGetCurrentContext();
-			// [keyWindow.layer renderInContext:context];   
-			// UIImage *capturedScreen = UIGraphicsGetImageFromCurrentImageContext();
-			// UIGraphicsEndImageContext();
-			// UIImage *blurredImage = MSHookIvar<UIImage *>(blurView, "_maskImage");
-
-			// blurredImage = capturedScreen;
-			// object_setInstanceVariable(blurView,"_maskImage",capturedScreen);
-			
-			// //UIView *headerView = [[UIView alloc] initWithFrame:rect];
-			// UIImageView *logoView = [[UIImageView alloc] initWithImage:capturedScreen];
-			// object_setInstanceVariable(blurView,"_maskImageView",logoView);
-			//UIColor * color = [UIColor colorWithRed:255/255.0f green:256/255.0f blue:0/255.0f alpha:1.0f];
-
-			// object_setInstanceVariable(blurView,"_wallpaperAverageColor",color);
-			//NSLog(@"AnySpot: wallpaper color: %@",MSHookIvar<UIColor *>(blurView, "_wallpaperAverageColor"));
-			//[blurView _updateWallpaperAverageColor:color];
-			// [blurView setNeedsDisplay];
-			//[headerView addSubview:logoView];
-			//mask is a uiresizableimage
-			//[blurView setMaskImage:headerView masksBlur:YES masksTint:NO];
-			
-			// SBSearchResultsBackdropView *backdrop = MSHookIvar<SBSearchResultsBackdropView *>(vcont, "_tableBackdrop");
-			// SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
-			// blurView = MSHookIvar<SBWallpaperEffectView *>(backdrop, "_effectView");
 
             window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
             window.windowLevel = 998; //one less than the statusbar
@@ -267,18 +222,6 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 		displayIdentifier = arg2; [displayIdentifier retain];
 		section = arg3; [section retain];
 	}
-
-	// if(willLaunch) {
-	// 	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:arg2 suspended:NO];
-	// 	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
-	// 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
-	// 		displayIdentifier = arg2;
-	// 		willLaunch = TRUE;
-	// 	}
-		
-	// } else {
-	// 	willLaunch = FALSE;
-	// }
 	return %orig;
 }
 %end
@@ -296,10 +239,6 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 		window = nil;
 	}
 }
-// -(void)updateForRotation {
-// 	//%log;
-// 	%orig;
-// }
 %end
 
 %hook SBSearchViewController
@@ -310,21 +249,6 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
 	}
 }
-// -(void)willRotateToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
-// 	//%log;
-// 	%orig;
-// 	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
-// }
-// -(void)willAnimateRotationToInterfaceOrientation:(int)arg1 duration:(double)arg2 {
-// 	//%log;
-// 	%orig;
-// 	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
-// }
-// -(void)didRotateFromInterfaceOrientation:(int)arg1 {
-// 		//%log;	
-// 		%orig;	
-// 		[[%c(SBSearchGesture) sharedInstance] updateForRotation];
-// }
 %end
 
 %hook SBApplicationIcon
@@ -339,26 +263,6 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 	}
 
 	%orig;
-	
-
-	// if (willLaunch) {
-	// 	willLaunch = FALSE;
-	// 	[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<NSString *>(self, "_displayIdentifier") suspended:NO];
-	// 	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
-	// 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
-	// 		displayIdentifier = MSHookIvar<NSString *>(self, "_displayIdentifier");
-	// 		willLaunch = TRUE;
-	// 	}
-	// }
-	// %orig;
-}
-%end
-	
-%hook SpringBoard
--(void)_rotateView:(id)arg1 toOrientation:(int)arg2 {
-	//%log;
-	%orig;
-	//[[%c(SBSearchGesture) sharedInstance] updateForRotation];
 }
 %end
 	
@@ -370,11 +274,9 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 	if(willlaunchWithURL) {
 		willlaunchWithURL = NO; 
 		willLaunchWithSBIcon = NO;
-		//NSLog(@"will call launchingURLForResult %@ %@ %@",urlResult, displayIdentifier, section);
 		if(urlResult && [urlResult url]) {
 			if(logging) NSLog(@"AnySpot: urlResutl url = %@",[urlResult url]);
 			[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[[urlResult url] description]]];
-			//[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:displayIdentifier suspended:NO];
 			[[%c(SBSearchModel) sharedInstance] launchingURLForResult:urlResult withDisplayIdentifier:displayIdentifier andSection:section];
 			[urlResult release];
 			[displayIdentifier release];
