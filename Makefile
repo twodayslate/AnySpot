@@ -1,5 +1,4 @@
-#THEOS_DEVICE_IP=172.20.10.1
-THEOS_DEVICE_IP=192.168.0.196
+THEOS_DEVICE_IP=192.168.0.105
 
 THEOS_PACKAGE_DIR_NAME = debs
 TARGET := iphone:clang
@@ -15,7 +14,7 @@ AnySpot_PRIVATE_FRAMEWORKS = Preferences
 AnySpot_LIBRARIES = flipswitch substrate
 AnySpot_ARCHS = armv7 arm64
 
-export SYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk
+#export SYSROOT = /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

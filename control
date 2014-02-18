@@ -1,7 +1,7 @@
 Package: com.twodayslate.anyspot
 Name: AnySpot
 Depends: mobilesubstrate, com.a3tweaks.flipswitch, preferenceloader
-Version: 0.92
+Version: 0.951
 Architecture: iphoneos-arm
 Description: Launch Spotlight from anywhere!
 Maintainer: twodayslate

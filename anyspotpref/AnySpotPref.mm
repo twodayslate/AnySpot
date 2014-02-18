@@ -28,7 +28,7 @@
 
 -(void)reset_brightness {
 	PSSpecifier *darknessSpecifier = [self specifierForID:@"anyspot_darkness"];
-	[self setPreferenceValue:@(60) specifier:darknessSpecifier];
+	[self setPreferenceValue:@(80) specifier:darknessSpecifier];
 	[self reloadSpecifier:darknessSpecifier];
 	darknessSpecifier = [self specifierForID:@"anyspot_dark"];
 	[self setPreferenceValue:@(1) specifier:darknessSpecifier];
@@ -39,6 +39,10 @@
 	PSSpecifier *darknessSpecifier = [self specifierForID:@"anyspot_alpha"];
 	[self setPreferenceValue:@(100) specifier:darknessSpecifier];
 	[self reloadSpecifier:darknessSpecifier];
+}
+
+-(void)respring {
+	system("killall -9 SpringBoard");
 }
 @end
 

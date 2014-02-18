@@ -43,7 +43,23 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Header Brightness</string>
+			<string>Dynamic Header</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_dynamicheader</string>
+			<key>id</key>
+			<string>anyspot_dynamicheader</string>
+			<key>label</key>
+			<string>Enabled</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -58,6 +74,65 @@
 			<string>anyspot_dark</string>
 			<key>label</key>
 			<string>Dark</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.any
+				spot/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+
+			<string>anyspot_translucent</string>
+			<key>id</key>
+			<string>anyspot_translucent</string>
+			<key>label</key>
+			<string>Translucent</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
+		</dict>
+		<dict>
+		<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_clearbg</string>
+			<key>id</key>
+			<string>anyspot_clearbg</string>
+			<key>label</key>
+			<string>Clear Background</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Header Tint</string>
+			<key>footerText</key>
+			<string>This overrides translucency</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_tint</string>
+			<key>id</key>
+			<string>anyspot_tint</string>
+			<key>label</key>
+			<string>Enabled</string>
 			<key>PostNotification</key>
 			<string>com.twodayslate.anyspot/settingschanged</string>
 		</dict>
@@ -100,9 +175,25 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_alphabutton</string>
+			<key>id</key>
+			<string>anyspot_alphabutton</string>
+			<key>label</key>
+			<string>Enabled</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSSliderCell</string>
 			<key>default</key>
-			<integer>80</integer>
+			<integer>100</integer>
 			<key>min</key>
 			<integer>0</integer>
 			<key>max</key>
@@ -166,6 +257,25 @@
 			<key>PostNotification</key>
 			<string>com.twodayslate.anyspot/settingschanged</string>
 		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Respring</string>
+			<key>footerText</key>
+			<string>This may be required for some changes to take effect.</string>
+		</dict>
+		<dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Respring</string>
+            <key>id</key>
+            <string>respring</string>
+            <key>action</key>
+            <string>respring</string>
+        </dict>
 
 		<dict>
 			<key>cell</key>

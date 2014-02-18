@@ -1,6 +1,6 @@
 #import "FSSwitchDataSource.h"
 #import "FSSwitchPanel.h"
-#import "substrate.h"
+#import "CydiaSubstrate.h"
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import <QuartzCore/QuartzCore.h>
@@ -113,9 +113,10 @@ static int sbloc = nil;
 static id urlResult = nil;
 static id section = nil;
 static NSString *displayIdentifier = @"";
-static int brightness = nil;
-static int alpha = nil;
-static BOOL hidecc, hidenc, hotfix_one, hotfix_two, dark, logging, added, pleaselaunch = nil;
+static int brightness = 80;
+static int alpha = 100;
+static BOOL hidecc, hidenc, hotfix_one, dynamicheader, translucent, clearbg, dark = YES;
+static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint = NO;
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
     vcont = [objc_getClass("SBSearchViewController") sharedInstance];
@@ -130,29 +131,49 @@ static BOOL hidecc, hidenc, hotfix_one, hotfix_two, dark, logging, added, please
 	
 	switch (newState){
 		case FSSwitchStateIndeterminate: return;
-		case FSSwitchStateOff:
+		case FSSwitchStateOff: {
 			[ges resetAnimated:YES];
 			break;
+		}
 		case FSSwitchStateOn:{
 			SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
 			[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported)
 
-			if(!added){
-				toolbar = [[UIToolbar alloc] initWithFrame:sheader.bounds];
-				toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-				[sheader insertSubview:toolbar atIndex:0];
+			if(added) {
+				added = NO;
+				[toolbar removeFromSuperview];
 			}
-			if(dark) {
-				[toolbar setBarStyle:UIBarStyleBlack];
-			} else { [toolbar setBarStyle:UIBarStyleDefault]; }
 
-			[toolbar setTranslucent:YES];
-			CGFloat alpha_true = alpha * 0.01;
-			CGFloat brightness_true = brightness * 0.01;
-			UIColor *color = [UIColor colorWithHue:0.0f saturation:0.0f brightness:brightness_true alpha:1.0];
-			//http://stackoverflow.com/questions/19511744/uitoolbar-tintcolor-and-bartintcolor-issues
-			toolbar.tintColor = color;
-			toolbar.alpha = alpha_true;
+			if(dynamicheader) {
+				SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
+				[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported)
+
+				toolbar = [[UIToolbar alloc] initWithFrame:sheader.bounds]; [toolbar retain];
+				toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+				if(dark) {
+					[toolbar setBarStyle:UIBarStyleBlack];
+				} else { [toolbar setBarStyle:UIBarStyleDefault]; }
+
+				if(translucent) [toolbar setTranslucent:YES];
+
+				if(clearbg) [toolbar setBackgroundColor:[UIColor clearColor]];
+
+				CGFloat alpha_true = alpha * 0.01;
+				CGFloat brightness_true = brightness * 0.01;
+				UIColor *color = [UIColor colorWithHue:0.0f saturation:0.0f brightness:brightness_true alpha:1.0];
+				//http://stackoverflow.com/questions/19511744/uitoolbar-tintcolor-and-bartintcolor-issues
+				if(tint) {
+					toolbar.tintColor = color;
+					toolbar.barTintColor = color;
+				}
+				
+				if(alphabutton) toolbar.alpha = alpha_true;
+
+				added = YES;
+
+				[sheader insertSubview:toolbar atIndex:0];
+			}			
 
             window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
             window.windowLevel = 998; //one less than the statusbar
@@ -297,7 +318,12 @@ static void loadPrefs() {
     	hidecc = [[settings objectForKey:@"anyspot_hidecc"] boolValue];
     	hotfix_one = [[settings objectForKey:@"anyspot_hotfix_one"] boolValue]; 
     	hotfix_two = [[settings objectForKey:@"anyspot_hotfix_two"] boolValue]; 
+    	dynamicheader = [[settings objectForKey:@"anyspot_dynamicheader"] boolValue]; 
     	dark = [[settings objectForKey:@"anyspot_dark"] boolValue]; 
+    	translucent = [[settings objectForKey:@"anyspot_translucent"] boolValue]; 
+    	alphabutton = [[settings objectForKey:@"anyspot_alphabutton"] boolValue]; 
+    	translucent = [[settings objectForKey:@"anyspot_tint"] boolValue]; 
+    	clearbg = [[settings objectForKey:@"anyspot_clearbg"] boolValue]; 
     	logging = [[settings objectForKey:@"anyspot_logging"] boolValue];
     	brightness = [[settings objectForKey:@"anyspot_darkness"] integerValue]; 
     	alpha = [[settings objectForKey:@"anyspot_alpha"] integerValue];
