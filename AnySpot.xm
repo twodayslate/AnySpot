@@ -105,6 +105,7 @@
 static UIWindow *window = nil;
 static SBSearchViewController *vcont = nil;
 static SBRootFolderView *fv = nil;
+static UIToolbar *toolbar = nil;
 static BOOL willLaunchWithSBIcon = NO;
 static BOOL willlaunchWithURL = NO;
 static id sbicon = nil;
@@ -112,7 +113,9 @@ static int sbloc = nil;
 static id urlResult = nil;
 static id section = nil;
 static NSString *displayIdentifier = @"";
-static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
+static int brightness = nil;
+static int alpha = nil;
+static BOOL hidecc, hidenc, hotfix_one, hotfix_two, dark, logging, added, pleaselaunch = nil;
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
     vcont = [objc_getClass("SBSearchViewController") sharedInstance];
@@ -134,16 +137,22 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 			SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
 			[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported)
 
-			UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:sheader.bounds];
-			toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+			if(!added){
+				toolbar = [[UIToolbar alloc] initWithFrame:sheader.bounds];
+				toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+				[sheader insertSubview:toolbar atIndex:0];
+			}
+			if(dark) {
+				[toolbar setBarStyle:UIBarStyleBlack];
+			} else { [toolbar setBarStyle:UIBarStyleDefault]; }
+
 			[toolbar setTranslucent:YES];
-			[toolbar setBarStyle:UIBarStyleBlack];
-			[toolbar setTranslucent:YES];
-			//toolbar.backgroundColor = [UIColor clearColor];
-			//toolbar.alpha = 0.8;
+			CGFloat alpha_true = alpha * 0.01;
+			CGFloat brightness_true = brightness * 0.01;
+			UIColor *color = [UIColor colorWithHue:0.0f saturation:0.0f brightness:brightness_true alpha:1.0];
 			//http://stackoverflow.com/questions/19511744/uitoolbar-tintcolor-and-bartintcolor-issues
-			toolbar.tintColor = [UIColor colorWithRed:9/255.0f green:153/255.0f blue:153/255.0f alpha:1.0f];
-			[sheader insertSubview:toolbar atIndex:0];
+			toolbar.tintColor = color;
+			toolbar.alpha = alpha_true;
 
             window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
             window.windowLevel = 998; //one less than the statusbar
@@ -187,30 +196,6 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 }
 @end
 
-%hook UIView
--(id)_initWithMaskImage:(id)arg1 {
-	if(logging) %log;
-	return %orig;
-}
-%end
-%hook UIResizableView
--(id)_initWithMaskImage:(id)arg1 {
-	if(logging) %log;
-	return %orig;
-}
-%end
-
-%hook SBWallpaperEffectView
-+(id)imageInRect:(CGRect)arg1 forVariant:(int)arg2 withStyle:(int)arg3 zoomFactor:(float)arg4 mask:(id)arg5 masksBlur:(BOOL)arg6 masksTint:(BOOL)arg7 {
-	if(logging) %log;
-	return %orig;
-}
--(void)setMaskImage:(id)arg1 masksBlur:(BOOL)arg2 masksTint:(BOOL)arg3 {
-	if(logging) %log;
-	%orig;
-}
-%end
-
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
 	if(logging) %log;
@@ -222,6 +207,7 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 		displayIdentifier = arg2; [displayIdentifier retain];
 		section = arg3; [section retain];
 	}
+	pleaselaunch = NO;
 	return %orig;
 }
 %end
@@ -245,6 +231,7 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 -(void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2  {
 	if(logging) %log;
 	%orig;
+	pleaselaunch = YES;
 	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
 	}
@@ -254,15 +241,19 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 %hook SBApplicationIcon
 - (void)launchFromLocation:(int)location {
 	if(logging) %log;
+	if(logging) NSLog(@"AnySpot: pleaselaunch = %d",pleaselaunch);
+
+	%orig;
 
 	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
 		willLaunchWithSBIcon = YES; 
 		willlaunchWithURL = NO; 
 		sbicon = self; [sbicon retain];
-		sbloc = location; 
+		sbloc = location; // 0 = dock/springboard, 4 = spotlight
+	} else if(pleaselaunch) {
+		[(SpringBoard *)[UIApplication sharedApplication] launchApplicationWithIdentifier:MSHookIvar<NSString *>(self, "_displayIdentifier") suspended:NO];
 	}
-
-	%orig;
+	pleaselaunch = NO;
 }
 %end
 	
@@ -292,6 +283,7 @@ static id hidecc, hidenc, hotfix_one, hotfix_two, logging = nil;
 			[sbicon release];
 		}
 	}
+	pleaselaunch = NO;
 }
 %end
 
@@ -301,11 +293,14 @@ static void loadPrefs() {
     NSMutableDictionary *settings = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.twodayslate.anyspot.plist"];
 
     if(settings) {
-    	hidenc = [settings objectForKey:@"anyspot_hidenc"]; [hidenc retain];
-    	hidecc = [settings objectForKey:@"anyspot_hidecc"]; [hidecc retain];
-    	hotfix_one = [settings objectForKey:@"anyspot_hotfix_one"]; [hotfix_one retain];
-    	hotfix_two = [settings objectForKey:@"anyspot_hotfix_two"]; [hotfix_two retain];
-    	logging = [settings objectForKey:@"anyspot_logging"]; [logging retain];
+    	hidenc = [[settings objectForKey:@"anyspot_hidenc"] boolValue]; 
+    	hidecc = [[settings objectForKey:@"anyspot_hidecc"] boolValue];
+    	hotfix_one = [[settings objectForKey:@"anyspot_hotfix_one"] boolValue]; 
+    	hotfix_two = [[settings objectForKey:@"anyspot_hotfix_two"] boolValue]; 
+    	dark = [[settings objectForKey:@"anyspot_dark"] boolValue]; 
+    	logging = [[settings objectForKey:@"anyspot_logging"] boolValue];
+    	brightness = [[settings objectForKey:@"anyspot_darkness"] integerValue]; 
+    	alpha = [[settings objectForKey:@"anyspot_alpha"] integerValue];
     }
     if(logging) NSLog(@"AnySpot: settings = %@",settings);
     [settings release];

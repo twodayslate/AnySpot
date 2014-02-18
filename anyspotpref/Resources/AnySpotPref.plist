@@ -43,6 +43,97 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
+			<string>Header Brightness</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_dark</string>
+			<key>id</key>
+			<string>anyspot_dark</string>
+			<key>label</key>
+			<string>Dark</string>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>default</key>
+			<integer>80</integer>
+			<key>min</key>
+			<integer>0</integer>
+			<key>max</key>
+			<integer>100</integer>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_darkness</string>
+			<key>id</key>
+			<string>anyspot_darkness</string>
+			<key>label</key>
+			<string>Darkness</string>
+			<key>showValue</key>
+			<true/>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
+		</dict>
+		<dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Reset</string>
+            <key>action</key>
+            <string>reset_brightness</string>
+        </dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Header Alpha</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>default</key>
+			<integer>80</integer>
+			<key>min</key>
+			<integer>0</integer>
+			<key>max</key>
+			<integer>100</integer>
+			<key>defaults</key>
+			<string>com.twodayslate.anyspot</string>
+			<key>key</key>
+			<string>anyspot_alpha</string>
+			<key>id</key>
+			<string>anyspot_alpha</string>
+			<key>label</key>
+			<string>Alpha</string>
+			<key>showValue</key>
+			<true/>
+			<key>PostNotification</key>
+			<string>com.twodayslate.anyspot/settingschanged</string>
+		</dict>
+		<dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Reset</string>
+            <key>action</key>
+            <string>reset_alpha</string>
+        </dict>
+
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
 			<string>Hotfixes</string>
 			<key>footerText</key>
 			<string>If you are having graphical glitches or compatibility issues enable these. Respring may be required.</string>
