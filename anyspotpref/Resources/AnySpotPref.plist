@@ -75,8 +75,7 @@
 			<key>label</key>
 			<string>Dark</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.any
-				spot/settingschanged</string>
+			<string>com.twodayslate.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -86,7 +85,6 @@
 			<key>defaults</key>
 			<string>com.twodayslate.anyspot</string>
 			<key>key</key>
-
 			<string>anyspot_translucent</string>
 			<key>id</key>
 			<string>anyspot_translucent</string>
@@ -124,7 +122,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<true/>
+			<false/>
 			<key>defaults</key>
 			<string>com.twodayslate.anyspot</string>
 			<key>key</key>
@@ -177,7 +175,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<true/>
+			<false/>
 			<key>defaults</key>
 			<string>com.twodayslate.anyspot</string>
 			<key>key</key>

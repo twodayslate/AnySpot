@@ -123,6 +123,8 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint = NO;
     SBSearchHeader *sheader = MSHookIvar<SBSearchHeader *>(vcont, "_searchHeader");
 	UIView *view = MSHookIvar<UIView *>(vcont, "_view");
 	SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
+	SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
+
 	//NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.twodayslate.anyspot.plist"]];
 	
 	if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
@@ -136,16 +138,12 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint = NO;
 			break;
 		}
 		case FSSwitchStateOn:{
-			SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
-			[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported)
-
 			if(added) {
 				added = NO;
 				[toolbar removeFromSuperview];
 			}
 
 			if(dynamicheader) {
-				SBWallpaperEffectView *blurView = MSHookIvar<SBWallpaperEffectView *>(sheader, "_blurView");
 				[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported)
 
 				toolbar = [[UIToolbar alloc] initWithFrame:sheader.bounds]; [toolbar retain];
@@ -173,7 +171,9 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint = NO;
 				added = YES;
 
 				[sheader insertSubview:toolbar atIndex:0];
-			}			
+			} else {
+				[blurView setStyle:6];
+			}
 
             window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
             window.windowLevel = 998; //one less than the statusbar
@@ -216,6 +216,13 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint = NO;
 	}
 }
 @end
+
+%hook SBWallpaperEffectView
+-(void)setStyle:(int)arg1 {
+	%log;
+	%orig;
+}
+%end
 
 %hook SBSearchModel
 -(id)launchingURLForResult:(id)arg1 withDisplayIdentifier:(id)arg2 andSection:(id)arg3 {
