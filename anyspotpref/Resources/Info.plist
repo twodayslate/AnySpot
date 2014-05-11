@@ -7,7 +7,9 @@
 	<key>CFBundleExecutable</key>
 	<string>AnySpotPref</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.twodayslate.anyspot</string>
+	<string>org.thebigboss.anyspotpref</string>
+	<key>CFBundleDisplayName</key>
+	<string>AnySpotPref</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -21,7 +23,7 @@
 	<key>DTPlatformName</key>
 	<string>iphoneos</string>
 	<key>MinimumOSVersion</key>
-	<string>3.0</string>
+	<string>7.0</string>
 	<key>NSPrincipalClass</key>
 	<string>AnySpotPrefListController</string>
 </dict>

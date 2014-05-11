@@ -1,9 +1,10 @@
-Package: com.twodayslate.anyspot
+Package: org.thebigboss.anyspot
 Name: AnySpot
-Depends: mobilesubstrate, com.a3tweaks.flipswitch, preferenceloader
-Version: 0.952
+Depends: mobilesubstrate, com.a3tweaks.flipswitch, preferenceloader, libactivator
+Version: 0.999
 Architecture: iphoneos-arm
 Description: Launch Spotlight from anywhere!
 Maintainer: twodayslate
 Author: twodayslate
 Section: Addons (FlipSwitch)
+Icon: file:///Library/PreferenceBundles/AnySpotPref.bundle/icon.png

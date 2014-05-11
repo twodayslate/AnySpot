@@ -6,6 +6,32 @@
 	<array>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>org.thebigboss.anyspot</string>
+			<key>key</key>
+			<string>anyspot_enabled</string>
+			<key>label</key>
+			<string>Enabled</string>
+			<key>PostNotification</key>
+			<string>org.thebigboss.anyspot/settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>label</key>
+			<string>Activation Methods</string>
+			<key>isController</key>
+			<true/>
+			<key>bundle</key>
+			<string>LibActivator</string>
+			<key>activatorListener</key>
+			<string>switch-flip.org.thebigboss.anyspot</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Autohide</string>
@@ -16,13 +42,13 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_hidenc</string>
 			<key>label</key>
 			<string>Notificiation Center</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -30,13 +56,34 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_hidecc</string>
 			<key>label</key>
 			<string>Control Center</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
+		</dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Blur Background</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>org.thebigboss.anyspot</string>
+			<key>key</key>
+			<string>anyspot_blurbg</string>
+			<key>label</key>
+			<string>Enabled</string>
+			<key>PostNotification</key>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 
 		<dict>
@@ -51,7 +98,7 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_dynamicheader</string>
 			<key>id</key>
@@ -59,7 +106,7 @@
 			<key>label</key>
 			<string>Enabled</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -67,7 +114,7 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_dark</string>
 			<key>id</key>
@@ -75,7 +122,7 @@
 			<key>label</key>
 			<string>Dark</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -83,7 +130,7 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_translucent</string>
 			<key>id</key>
@@ -91,7 +138,7 @@
 			<key>label</key>
 			<string>Translucent</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 		<key>cell</key>
@@ -99,7 +146,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_clearbg</string>
 			<key>id</key>
@@ -107,7 +154,7 @@
 			<key>label</key>
 			<string>Clear Background</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 
 		<dict>
@@ -124,7 +171,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_tint</string>
 			<key>id</key>
@@ -132,7 +179,7 @@
 			<key>label</key>
 			<string>Enabled</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -144,7 +191,7 @@
 			<key>max</key>
 			<integer>100</integer>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_darkness</string>
 			<key>id</key>
@@ -154,7 +201,7 @@
 			<key>showValue</key>
 			<true/>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
             <key>cell</key>
@@ -177,7 +224,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_alphabutton</string>
 			<key>id</key>
@@ -185,7 +232,7 @@
 			<key>label</key>
 			<string>Enabled</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -197,7 +244,7 @@
 			<key>max</key>
 			<integer>100</integer>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_alpha</string>
 			<key>id</key>
@@ -207,7 +254,7 @@
 			<key>showValue</key>
 			<true/>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
             <key>cell</key>
@@ -223,7 +270,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Hotfixes</string>
+			<string>Legacy Support</string>
 			<key>footerText</key>
 			<string>If you are having graphical glitches or compatibility issues enable these. Respring may be required.</string>
 		</dict>
@@ -231,15 +278,15 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<true/>
+			<false/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_hotfix_one</string>
 			<key>label</key>
 			<string>SBSearchView</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -247,13 +294,13 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_hotfix_two</string>
 			<key>label</key>
 			<string>SBSearchHeader</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 
 		<dict>
@@ -287,13 +334,13 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.twodayslate.anyspot</string>
+			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
 			<string>anyspot_logging</string>
 			<key>label</key>
 			<string>Enable</string>
 			<key>PostNotification</key>
-			<string>com.twodayslate.anyspot/settingschanged</string>
+			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
 
 	</array>
