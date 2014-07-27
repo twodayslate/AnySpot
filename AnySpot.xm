@@ -140,6 +140,11 @@
 @interface AnySpotUIViewController : UIViewController
 @end
 
+// Convergance support
+@interface CVResources : NSObject
++(BOOL)lockScreenEnabled;
+@end
+
 @implementation AnySpotSwitch
 -(FSSwitchState)stateForSwitchIdentifier:(NSString *)switchIdentifier{
 		SBSearchViewController *vcont = [objc_getClass("SBSearchViewController") sharedInstance];
@@ -285,6 +290,12 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
             //[window setWindowLevel:9000]; // http://stackoverflow.com/questions/22241412/add-uiview-banner-above-status-bar-ios-7
 			if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
 				window.windowLevel = 1051;
+				
+				if ([objc_getClass("CVLockController") class]) {
+					// Convergance support
+					if ([objc_getClass("CVResources") lockScreenEnabled])
+						window.windowLevel = 1065;
+				}
 			}
 			if([[%c(SBUIController) sharedInstance] isAppSwitcherShowing]) {
 				window.windowLevel = 10000;

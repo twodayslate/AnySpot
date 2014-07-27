@@ -3,7 +3,7 @@
 	bundle = AnySpotPref;
 	cell = PSLinkCell;
 	detail = AnySpotPrefListController;
-	icon = settings.png;
+	icon = icon.png;
 	isController = 1;
 	label = "AnySpot";
     };
