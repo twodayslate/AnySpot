@@ -19,7 +19,6 @@
 -(void)_resetViewController;
 -(id)_window;
 -(void)_fadeForLaunchWithDuration:(double)arg1 completion:(/*^block*/ id)arg2 ;
--(void)_resizeTableViewForPreferredContentSizeChange:(id)arg1 ;
 @end
 
 @interface SBSearchHeader : UIView
@@ -553,6 +552,32 @@ static void loadPrefs() {
     if(logging) NSLog(@"AnySpot: settings = %@",settings);
     [settings release];
 }
+
+%hook SBRootFolderView 
+-(void)addSubview:(id)arg1 {
+	NSLog(@"Adding special view");
+	NSLog(@"hooked view = %@",MSHookIvar<UIView *>([objc_getClass("SBSearchViewController") sharedInstance], "_view"));
+	%log;
+	%orig;
+}
+-(void)insertSubview:(id)arg1 below:(id)arg2 {
+	%log;
+	%orig;
+}
+-(void)insertSubview:(id)arg1 belowSubview:(id)arg2 {
+	%log;
+	%orig;
+}
+-(void)_addSubview:(id)arg1 positioned:(int)arg2 relativeTo:(id)arg3 {
+	%log;
+	%orig;
+}
+-(void)insertSubview:(id)arg1 aboveSubview:(id)arg2 {
+	%log; %orig;
+}
+-(void)insertSubview:(id)arg1 above:(id)arg2 { %log; %orig; }
+-(void)layoutViewsForSearch { %log; %orig;}
+%end
 
 %ctor {
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("org.thebigboss.anyspot/settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
