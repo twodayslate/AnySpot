@@ -19,6 +19,10 @@
 -(void)_resetViewController;
 -(id)_window;
 -(void)_fadeForLaunchWithDuration:(double)arg1 completion:(/*^block*/ id)arg2 ;
+-(void)window:(id)arg1 willAnimateRotationToInterfaceOrientation:(int)arg2 duration:(double)arg3 ;
+-(void)window:(id)arg1 setupWithInterfaceOrientation:(int)arg2 ;
+-(BOOL)_forwardRotationMethods;
+-(void)_updateTableContents;
 @end
 
 @interface SBSearchHeader : UIView
@@ -73,6 +77,7 @@
 -(void)_updateToInterfaceOrientation:(int)arg1 animated:(BOOL)arg2 ;
 -(void)_updateToInterfaceOrientation:(int)arg1 duration:(double)arg2 force:(BOOL)arg3 ;
 -(void)makeKeyAndOrderFront:(id)arg1 ;
+-(int)interfaceOrientation;
 @end
 
 @interface UIViewController (extras)
@@ -85,6 +90,9 @@
 @end
 
 @interface SBRootFolderView : UIView
+-(void)setOrientation:(int)arg1 ;
+-(id)delegate;
+-(id)_viewDelegate;
 @end
 
 @interface SBSearchGesture
@@ -140,6 +148,11 @@
 @interface AnySpotUIViewController : UIViewController
 @end
 
+@interface SBRootFolderController : UIViewController
+-(void)setOrientation:(int)arg1 ;
+-(void)willAnimateRotationToInterfaceOrientation:(int)arg1 ;
+@end
+
 // Convergance support
 @interface CVResources : NSObject
 +(BOOL)lockScreenEnabled;
@@ -153,7 +166,7 @@
 
 static UIWindow *window = nil;
 static SBSearchViewController *vcont = nil;
-static SBRootFolderView *fv = nil;
+static SBRootFolderView *fv = nil; static SBRootFolderController *fvd = nil;
 static UIToolbar *toolbar = nil;
 static SBIconScrollView *gesTargetview = nil;
 static BOOL willLaunchWithSBIcon = NO;
@@ -165,6 +178,7 @@ static id section = nil;
 static NSString *displayIdentifier = @"";
 static int brightness = 80;
 static int alpha = 100;
+static UIWindow *topMost = nil;
 static BOOL hidecc, hidenc, hotfix_one, dynamicheader, translucent, clearbg, dark = YES;
 static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled, blurbg = NO;
 
@@ -181,6 +195,7 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 	
 	if ([[view superview] isKindOfClass:[%c(SBRootFolderView) class]]) {
 		fv = (SBRootFolderView *)[view superview];
+		fvd = [fv delegate];
 	}
 
 	if(!enabled) return; 
@@ -197,16 +212,18 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 				[toolbar removeFromSuperview];
 			}
 
-
 			if(logging) {
 				NSLog(@"AnySpot: before anything ***********************************");
 				NSLog(@"AnySpot: sheader's window = %@",[sheader window]);
 				NSLog(@"AnySpot: view's window = %@",[view window]);
 				NSLog(@"AnySpot: vcont window = %@",[vcont _window]);
 				NSLog(@"AnySpot: target view's window = %@",[gesTargetview window]);
+				NSLog(@"AnySpot: viewController window = %@",[vcont _window]);
 				for(id subview in [view subviews]) {
 					NSLog(@"AnySpot: view's window = %@ for %@",[subview window],subview);
 				}
+				NSLog(@"AnySpot: folderView delegate = %@",[fv delegate]);
+				NSLog(@"AnySpot: folderView viewDelegate = %@",[fv _viewDelegate]);
 				NSLog(@"AnySpot: target view's mask= %d",(int)[gesTargetview autoresizingMask]);
 				NSLog(@"AnySpot: target view = %@",gesTargetview);
 				NSLog(@"AnySpot: view auto resize subview = %d",(int)[view autoresizesSubviews]);
@@ -320,12 +337,40 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
             //[window setDelegate:[[%c(SpringBoard) sharedApplication] delegate]];
             //[window setDelegate:[vcont _embeddedDelegate]];
             //[window setDelegate:[vcont transitioningDelegate]];
-            [window setDelegate:vcont];
+            //[window setDelegate:vcont];
             // //[window setDelegate:ges];
-             [window setContentView:view];
-            //[window setAutorotates:YES];
+            //[window setContentView:view];
+            
+            [window setAutorotates:YES];
             //[window _addRotationViewController:vcont];
+            [%c(SBSearchViewController) attemptRotationToDeviceOrientation];
+            window.rootViewController = vcont;
+
+            [window setRootViewController:vcont];
+			[window setContentView:view];
+			[window setDelegate:vcont];
+
+			//NSLog(@"Springboard -(int)interfaceOrientationForCurrentDeviceOrientation; = %f",(float)[UIApplication interfaceOrientationForCurrentDeviceOrientation]);
+			[window _setRotatableViewOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation] duration:0.0 force:1];
+			//[(SpringBoard *)%c(SpringBoard) _rotateView:view toOrientation:[[UIDevice currentDevice] orientation]];
+			[vcont _forwardRotationMethods];
+
+			topMost = [UIApplication sharedApplication].keyWindow;
+
+			if(logging) {
+				NSLog(@"AnySpot: Top Most keyWindow = %@",topMost);
+				NSLog(@"AnySpot Top Most view Controller = %@",topMost.rootViewController);
+			}
+
+			// [topMost addSubview:view];
+ 
+			// if(topMost != vcont) {
+			// 	NSLog(@"GRATE GOD YOU DID THIS! %@",topMost);
+			// 	didAddTopMost = YES;
+			// 	[topMost presentViewController:vcont animated:YES completion:nil];
+			// }
 			
+
             if(hotfix_one) {
             	[window addSubview:view];
 			}
@@ -353,14 +398,12 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 			//[ges setTargetView:[window contentView]];
 
 			//[[UIApplication sharedApplication] setStatusBarHidden:NO animated:YES];
-				
-			
-			[ges updateForRotation];
 
 			[ges setTargetView:window]; // This is for animations
 			
 
-			[ges revealAnimated:YES];  
+			[ges revealAnimated:YES];
+  
 			//[ges updateForRotation];
 			//[window _setRotatableViewOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] _frontMostAppOrientation] duration:0.0 force:0]; //force landscape
 
@@ -420,6 +463,7 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 -(void)resetAnimated:(BOOL)arg1 {
 	if(logging) %log;
 	%orig;
+
     if(window) {
 		[vcont _fadeForLaunchWithDuration:0.3f completion:^void{
 			SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
@@ -428,14 +472,35 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 			for(id view in [window subviews]) {
 			[fv addSubview:view];
 			}
-			//[fv addSubview:[[window subviews] objectAtIndex:0]];
+
 			[window resignKeyWindow];
 			[window release];
 			window = nil;
 		}];
 	}
+
 	
 }
+-(void)revealAnimated:(BOOL)arg1 {
+	//%orig;
+
+
+	// UIWindow *win = [vcont _window];
+	// NSLog(@"%@ orientation = %d vs. %d",win,[win interfaceOrientation], [(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]);
+
+	// if([win interfaceOrientation] != [(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]) {
+	// 	[win _setRotatableViewOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation] duration:0.0 force:1];
+	// 	[vcont _forwardRotationMethods];		
+	// 	[vcont window:win setupWithInterfaceOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]];
+	// 	[vcont window:win willAnimateRotationToInterfaceOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation] duration:0.0];	
+	// 	[self updateForRotation];
+	// 	[%c(SBSearchViewController) attemptRotationToDeviceOrientation];
+	// }
+	
+	
+	%orig;
+}
+
 %end
 
 %hook SBSearchViewController
@@ -447,14 +512,46 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
 	}
 }
+
+-(void)searchGesture:(SBSearchGesture *)arg1 completedShowing:(BOOL)arg2 {
+	%log;
+	NSLog(@"AnySpot: viewController window = %@",[vcont _window]);
+	NSLog(@"AnySpot: viewController parent controller = %@",vcont.parentViewController);
+
+	if(arg2){
+		UIWindow *win = [vcont _window];
+
+		if(logging) NSLog(@"%@ orientation = %d vs. %d",win,[win interfaceOrientation], [(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]);
+
+		if(win && [win interfaceOrientation] != [(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]) {
+			[win _setRotatableViewOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation] duration:0.0 force:1];
+			[vcont _forwardRotationMethods];		
+			[vcont window:win setupWithInterfaceOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]];
+			[vcont window:win willAnimateRotationToInterfaceOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation] duration:0.0];	
+			[arg1 updateForRotation];
+			[%c(SBSearchViewController) attemptRotationToDeviceOrientation];
+		}
+	}
+
+	[fv setOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]];
+	[fvd setOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]];
+	[fvd willAnimateRotationToInterfaceOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]];
+
+	%orig;	
+}
+
+%new
 - (NSUInteger)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskAll;
 }
+
 -(void)_resizeTableViewForPreferredContentSizeChange:(id)arg1 {
 	%log;
+	NSLog(@"GRATE GOD!");
 	%orig;
 }
 
+%new
 -(BOOL)shouldAutorotate {
 	return YES;
 }
@@ -464,6 +561,15 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 	else return %orig;
 }
 
+%new
+- (BOOL)shouldAutomaticallyForwardRotationMethods {
+	return YES;
+}
+
+%new
+- (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
+	return YES;
+}
 %end
 
 %hook SBApplicationIcon
@@ -495,6 +601,9 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 	[window _setRotatableViewOrientation:arg1 duration:arg2 force:1];
 	SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
 	[ges updateForRotation];
+	[fv setOrientation:arg1];
+	[fvd setOrientation:arg1];
+	[fvd willAnimateRotationToInterfaceOrientation:arg1];
 }
 
 %end
@@ -588,6 +697,7 @@ static void loadPrefs() {
 }
 -(void)insertSubview:(id)arg1 above:(id)arg2 { %log; %orig; }
 -(void)layoutViewsForSearch { %log; %orig;}
+-(void)setOrientation:(int)arg1 { %log; %orig; }
 %end
 
 %ctor {
