@@ -23,6 +23,7 @@
 -(void)window:(id)arg1 setupWithInterfaceOrientation:(int)arg2 ;
 -(BOOL)_forwardRotationMethods;
 -(void)_updateTableContents;
+-(void)forceRotation;
 @end
 
 @interface SBSearchHeader : UIView
@@ -151,6 +152,10 @@
 @interface SBRootFolderController : UIViewController
 -(void)setOrientation:(int)arg1 ;
 -(void)willAnimateRotationToInterfaceOrientation:(int)arg1 ;
+@end
+
+@interface UIView (extras)
+-(void)_updateContentSizeConstraints;
 @end
 
 // Convergance support
@@ -286,6 +291,10 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 			}
 
 			window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+			[[%c(SBSearchViewController) sharedInstance] view].bounds = window.bounds;
+			[[%c(SBSearchViewController) sharedInstance] view].frame = window.frame;
+			[[%c(SBSearchViewController) sharedInstance] view].center = window.center;
+			[[[%c(SBSearchViewController) sharedInstance] view] _updateContentSizeConstraints];
 			//if(window == NULL) window = [sheader window];
 			NSLog(@"window %@",window);
 
@@ -407,6 +416,7 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 
 			[ges setTargetView:window]; // This is for animations
 			
+			[[%c(SBSearchViewController) sharedInstance] forceRotation];
 
 			[ges revealAnimated:YES];
   
@@ -506,7 +516,13 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 	
 	
 	%orig;
+
+	if(window) {
+		[[%c(SBSearchViewController) sharedInstance] forceRotation];
+	}	
 }
+
+
 
 %end
 
@@ -517,6 +533,18 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 	pleaselaunch = YES;
 	if ([(SpringBoard*)[%c(SpringBoard) sharedApplication] isLocked]) {
 		[[[%c(SBLockScreenManager) sharedInstance] lockScreenViewController] setPasscodeLockVisible:YES animated:YES];
+	}
+}
+
+%new 
+-(void)forceRotation {
+	if(window) {
+		[window _setRotatableViewOrientation:[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation] duration:0.0 force:1];
+		[self view].bounds =[UIScreen mainScreen].bounds;
+		[self view].frame = window.frame;
+		[self view].center = window.center;
+		[[self view] _updateContentSizeConstraints];
+		[self _forwardRotationMethods];
 	}
 }
 
@@ -558,6 +586,8 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 		}];
 		}
 	}
+
+	[[%c(SBSearchViewController) sharedInstance] forceRotation];
 
 	
 	%orig;	
@@ -621,7 +651,11 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 	//[window _updateInterfaceOrientationFromDeviceOrientationIfRotationEnabled:YES];
 	//[window _updateToInterfaceOrientation:arg1 duration:arg2 force:1];
 	%orig;
+
 	[window _setRotatableViewOrientation:arg1 duration:arg2 force:1];
+
+	[[%c(SBSearchViewController) sharedInstance] forceRotation];
+
 	SBSearchGesture *ges = [%c(SBSearchGesture) sharedInstance];
 	[ges updateForRotation];
 
@@ -630,6 +664,19 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 	//[fvd willAnimateRotationToInterfaceOrientation:arg1];
 }
 
+%end
+
+%hook SBUIController
+- (void)window:(UIWindow *)window didRotateFromInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+	%log;
+	%orig;
+	// This method get called when orientation is changed.
+	// By default, this get called by -[SBIconController didRotateFromInterfaceOrientation:].
+	// So we hook here in SBUIController, maybe global ?
+	[[%c(SBSearchGesture) sharedInstance] updateForRotation];
+	[[%c(SBSearchViewController) sharedInstance] forceRotation];
+		
+}
 %end
 	
 %hook SBLockScreenManager

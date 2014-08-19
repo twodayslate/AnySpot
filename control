@@ -1,7 +1,7 @@
 Package: org.thebigboss.anyspot
 Name: AnySpot
 Depends: mobilesubstrate, com.a3tweaks.flipswitch, preferenceloader, libactivator
-Version: 0.999
+Version: 0.9995
 Architecture: iphoneos-arm
 Description: Launch Spotlight from anywhere!
 Maintainer: twodayslate
