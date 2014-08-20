@@ -92,125 +92,46 @@
 			<key>label</key>
 			<string>Dynamic Header</string>
 		</dict>
+		
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
+			<string>PSLinkListCell</string>
+			<key>label</key>
+			<string>Style</string>
+			<key>isController</key>
 			<true/>
-			<key>defaults</key>
-			<string>org.thebigboss.anyspot</string>
-			<key>key</key>
-			<string>anyspot_dynamicheader</string>
-			<key>id</key>
-			<string>anyspot_dynamicheader</string>
-			<key>label</key>
-			<string>Enabled</string>
-			<key>PostNotification</key>
-			<string>org.thebigboss.anyspot/settingschanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
+			<key>detail</key>
+        	<string>PSListItemsController</string>
+			<key>validValues</key>
+			<array>
+				<string>2060</string>
+				<string>0</string>
+				<string>1</string>
+				<string>2</string>
+			</array>
+			<key>validTitles</key>
+			<array>
+				<string>2060 - Adaptive Light (default)</string>
+				<string>0 - Light</string>
+				<string>1 - Dark</string>
+				<string>2 - Blur</string>
+			</array>
+			<key>shortTitles</key>
+			<array>
+				<string>2060</string>
+				<string>0</string>
+				<string>1</string>
+				<string>2</string>
+			</array>
 			<key>default</key>
-			<true/>
+			<string>2060</string>
 			<key>defaults</key>
 			<string>org.thebigboss.anyspot</string>
 			<key>key</key>
-			<string>anyspot_dark</string>
-			<key>id</key>
-			<string>anyspot_dark</string>
-			<key>label</key>
-			<string>Dark</string>
+			<string>header_style</string>
 			<key>PostNotification</key>
 			<string>org.thebigboss.anyspot/settingschanged</string>
 		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>org.thebigboss.anyspot</string>
-			<key>key</key>
-			<string>anyspot_translucent</string>
-			<key>id</key>
-			<string>anyspot_translucent</string>
-			<key>label</key>
-			<string>Translucent</string>
-			<key>PostNotification</key>
-			<string>org.thebigboss.anyspot/settingschanged</string>
-		</dict>
-		<dict>
-		<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>org.thebigboss.anyspot</string>
-			<key>key</key>
-			<string>anyspot_clearbg</string>
-			<key>id</key>
-			<string>anyspot_clearbg</string>
-			<key>label</key>
-			<string>Clear Background</string>
-			<key>PostNotification</key>
-			<string>org.thebigboss.anyspot/settingschanged</string>
-		</dict>
-
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Header Tint</string>
-			<key>footerText</key>
-			<string>This overrides translucency</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>org.thebigboss.anyspot</string>
-			<key>key</key>
-			<string>anyspot_tint</string>
-			<key>id</key>
-			<string>anyspot_tint</string>
-			<key>label</key>
-			<string>Enabled</string>
-			<key>PostNotification</key>
-			<string>org.thebigboss.anyspot/settingschanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSliderCell</string>
-			<key>default</key>
-			<integer>80</integer>
-			<key>min</key>
-			<integer>0</integer>
-			<key>max</key>
-			<integer>100</integer>
-			<key>defaults</key>
-			<string>org.thebigboss.anyspot</string>
-			<key>key</key>
-			<string>anyspot_darkness</string>
-			<key>id</key>
-			<string>anyspot_darkness</string>
-			<key>label</key>
-			<string>Darkness</string>
-			<key>showValue</key>
-			<true/>
-			<key>PostNotification</key>
-			<string>org.thebigboss.anyspot/settingschanged</string>
-		</dict>
-		<dict>
-            <key>cell</key>
-            <string>PSButtonCell</string>
-            <key>label</key>
-            <string>Reset</string>
-            <key>action</key>
-            <string>reset_brightness</string>
-        </dict>
 
 		<dict>
 			<key>cell</key>

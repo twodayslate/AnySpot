@@ -158,6 +158,11 @@
 -(void)_updateContentSizeConstraints;
 @end
 
+@interface _UIBackdropView : UIView
+-(void)setStyle:(int)arg1 ;
+-(id)initWithStyle:(int)arg1 ;
+@end
+
 // Convergance support
 @interface CVResources : NSObject
 +(BOOL)lockScreenEnabled;
@@ -172,7 +177,6 @@
 static UIWindow *window = nil;
 static SBSearchViewController *vcont = nil;
 static SBRootFolderView *fv = nil; static SBRootFolderController *fvd = nil;
-static UIToolbar *toolbar = nil;
 static SBIconScrollView *gesTargetview = nil;
 static BOOL willLaunchWithSBIcon = NO;
 static BOOL willlaunchWithURL = NO;
@@ -185,7 +189,9 @@ static int brightness = 80;
 static int alpha = 100;
 static UIWindow *topMost = nil;
 static BOOL hidecc, hidenc, hotfix_one, dynamicheader, translucent, clearbg, dark = YES;
-static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled, blurbg = NO;
+static BOOL hotfix_two, logging, pleaselaunch, alphabutton, enabled, blurbg = NO;
+static int headerStyle = 2060;
+static _UIBackdropView *backdropView  = nil;
 
 -(void)applyState:(FSSwitchState)newState forSwitchIdentifier:(NSString *)switchIdentifier{
 	//[vcont loadView];
@@ -213,10 +219,6 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 			break;
 		}
 		case FSSwitchStateOn:{
-			if(added) {
-				added = NO;
-				[toolbar removeFromSuperview];
-			}
 
 			if(logging) {
 				NSLog(@"AnySpot: before anything ***********************************");
@@ -258,37 +260,21 @@ static BOOL hotfix_two, logging, pleaselaunch, added, alphabutton, tint, enabled
 				NSLog(@"AnySpot current orientation: %d",[(SpringBoard *)[%c(SpringBoard) sharedApplication] interfaceOrientationForCurrentDeviceOrientation]);
 			}
 			
-			if(dynamicheader) {
-				[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported), 6 = default
-
-				toolbar = [[UIToolbar alloc] initWithFrame:sheader.bounds]; [toolbar retain];
-				toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-				if(dark) {
-					[toolbar setBarStyle:UIBarStyleBlack];
-				} else { [toolbar setBarStyle:UIBarStyleDefault]; }
-
-				if(translucent) [toolbar setTranslucent:YES];
-
-				if(clearbg) [toolbar setBackgroundColor:[UIColor clearColor]];
-
-				CGFloat alpha_true = alpha * 0.01;
-				CGFloat brightness_true = brightness * 0.01;
-				UIColor *color = [UIColor colorWithHue:0.0f saturation:0.0f brightness:brightness_true alpha:1.0];
-				//http://stackoverflow.com/questions/19511744/uitoolbar-tintcolor-and-bartintcolor-issues
-				if(tint) {
-					toolbar.tintColor = color;
-					toolbar.barTintColor = color;
-				}
-				
-				if(alphabutton) toolbar.alpha = alpha_true;
-
-				added = YES;
-
-				[sheader insertSubview:toolbar atIndex:0];
-			} else {
-				[blurView setStyle:6];
+			
+			if(backdropView) {
+				[backdropView removeFromSuperview];
 			}
+			[blurView setStyle:0]; // 0 = transparent, 1 = hidden (not supported), 6 = default
+			backdropView = [[_UIBackdropView alloc] initWithStyle:headerStyle];
+			// 2060 is good
+			// 0 is light-ish
+			// 1 is dark
+			// 2 is blur
+			if(alphabutton)
+				backdropView.alpha = alpha * 0.01;
+			
+			[sheader insertSubview:backdropView atIndex:0];
+			
 
 			window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
 			[[%c(SBSearchViewController) sharedInstance] view].bounds = window.bounds;
@@ -739,6 +725,7 @@ static void loadPrefs() {
     	blurbg = [[settings objectForKey:@"anyspot_blurbg"] boolValue];
     	brightness = [[settings objectForKey:@"anyspot_darkness"] integerValue]; 
     	alpha = [[settings objectForKey:@"anyspot_alpha"] integerValue];
+    	headerStyle = [settings objectForKey:@"header_style"] ? [[settings objectForKey:@"header_style"] integerValue] : 2060;
     }
     if(logging) NSLog(@"AnySpot: settings = %@",settings);
     [settings release];
